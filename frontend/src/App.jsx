@@ -14,6 +14,7 @@ import { AllocationManagement } from './pages/AllocationManagement';
 import { FieldVerification } from './pages/FieldVerification';
 import { CertificateDetail } from './pages/CertificateDetail';
 import { PublicVerify } from './pages/PublicVerify';
+import { PublicQrScanner } from './pages/PublicQrScanner';
 import { RulesManagement } from './pages/RulesManagement';
 import { FeesManagement } from './pages/FeesManagement';
 import { AuditLogs } from './pages/AuditLogs';
@@ -26,13 +27,16 @@ export default function App() {
   const [targetId, setTargetId] = useState(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
-  // Check URL pathname for direct public QR scan (e.g. /verify/CERT-MH-001-0001)
+  // Check URL pathname for direct public QR scan (e.g. /verify/CERT-MH-001-0001) or /scanner
   useEffect(() => {
     const path = window.location.pathname;
     if (path.startsWith('/verify/')) {
       const certNo = path.replace('/verify/', '');
       setCurrentView('public-verify');
       setTargetId(certNo);
+      setMobileNavOpen(false);
+    } else if (path === '/scanner' || path.startsWith('/scanner')) {
+      setCurrentView('public-scanner');
       setMobileNavOpen(false);
     }
   }, []);
@@ -44,10 +48,21 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
+  // If public scanner is active, render directly without requiring authentication
+  if (currentView === 'public-scanner') {
+    return (
+      <div className="app-container">
+        <Navbar onNavigate={navigate} onToggleMobileNav={() => setMobileNavOpen(!mobileNavOpen)} mobileNavOpen={mobileNavOpen} />
+        <PublicQrScanner onNavigate={navigate} />
+      </div>
+    );
+  }
+
   // If public verify is active, render directly without requiring authentication
   if (currentView === 'public-verify') {
     return (
       <div className="app-container">
+        <Navbar onNavigate={navigate} onToggleMobileNav={() => setMobileNavOpen(!mobileNavOpen)} mobileNavOpen={mobileNavOpen} />
         <PublicVerify certificateId={targetId || 'CERT-MH-001-0001'} onNavigate={navigate} />
       </div>
     );
@@ -130,6 +145,12 @@ export default function App() {
 
       case 'notifications':
         return <NotificationsPage onNavigate={navigate} />;
+
+      case 'public-scanner':
+        return <PublicQrScanner onNavigate={navigate} />;
+
+      case 'public-verify':
+        return <PublicVerify certificateId={targetId || 'CERT-MH-001-0001'} onNavigate={navigate} />;
 
       default:
         return renderRoleDashboard();

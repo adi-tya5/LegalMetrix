@@ -35,7 +35,7 @@ class Settings:
     # Primary design: PostgreSQL; isolated fallback: SQLite
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./legalmetrix.db")
     
-    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
-    BACKEND_URL: str = os.getenv("BACKEND_URL", "http://localhost:8000")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "https://legalmetrix-sih.vercel.app")
+    BACKEND_URL: str = os.getenv("BACKEND_URL", "https://legalmetrix-qjt1.onrender.com")
 
 settings = Settings()

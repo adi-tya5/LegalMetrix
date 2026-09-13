@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { apiRequest } from '../api/client';
+import { apiRequest, downloadCertificatePdf } from '../api/client';
 import { StatusBadge } from '../components/StatusBadge';
 import { DemoDisclaimer } from '../components/DemoDisclaimer';
 
@@ -236,21 +236,26 @@ export const InstrumentDetail = ({ instrumentId, onNavigate }) => {
                       {c.display_fingerprint}
                     </td>
                     <td>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                         <button
                           className="btn btn-outline btn-sm"
                           onClick={() => onNavigate('certificate-detail', c.id)}
                         >
                           View &amp; Verify
                         </button>
-                        <a
-                          href={`/api/v1/certificates/${c.id}/pdf`}
-                          target="_blank"
-                          rel="noreferrer"
+                        <button
+                          type="button"
                           className="btn btn-primary btn-sm"
+                          onClick={async () => {
+                            try {
+                              await downloadCertificatePdf(c.id, c.certificate_number);
+                            } catch (err) {
+                              alert(`Could not download PDF: ${err.message}`);
+                            }
+                          }}
                         >
                           📥 PDF
-                        </a>
+                        </button>
                       </div>
                     </td>
                   </tr>

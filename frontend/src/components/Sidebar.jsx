@@ -93,14 +93,15 @@ export const Sidebar = ({ currentView, onViewChange, mobileNavOpen, onCloseMobil
         {/* Public QR quick test helper */}
         <div style={{ marginTop: 'auto', padding: '1rem', borderTop: '1px solid #F1F5F9', background: '#F8FAFC' }}>
           <div style={{ fontSize: '0.725rem', fontWeight: '700', color: '#64748B', marginBottom: '0.35rem' }}>
-            PUBLIC QR VERIFY
+            PUBLIC QR VERIFICATION
           </div>
           <button
+            type="button"
             className="btn btn-outline btn-sm"
-            style={{ width: '100%', fontSize: '0.75rem', background: '#FFFFFF' }}
-            onClick={() => handleLinkClick('public-verify', 'CERT-MH-001-0001')}
+            style={{ width: '100%', fontSize: '0.75rem', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+            onClick={() => handleLinkClick('public-scanner')}
           >
-            🔍 View Public /verify
+            📷 Open QR Scanner
           </button>
         </div>
       </aside>

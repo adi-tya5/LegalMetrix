@@ -840,3 +840,46 @@ html, body {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   padding: 1.75rem;
 }
+
+/* Public QR Scanner Styles & Animation */
+@keyframes scanner-laser {
+  0% {
+    top: 0%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 98%;
+    opacity: 1;
+  }
+  100% {
+    top: 0%;
+    opacity: 0.8;
+  }
+}
+
+.scanner-viewfinder-container {
+  touch-action: manipulation;
+  user-select: none;
+}
+
+@media (max-width: 480px) {
+  .scanner-viewfinder-container {
+    height: 240px !important;
+    max-width: 100% !important;
+  }
+  .scanner-reticle {
+    width: 160px !important;
+    height: 160px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .scanner-viewfinder-container {
+    height: 200px !important;
+  }
+  .scanner-reticle {
+    width: 130px !important;
+    height: 130px !important;
+  }
+}
+

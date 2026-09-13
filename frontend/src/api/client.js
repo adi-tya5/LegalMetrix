@@ -67,3 +67,43 @@ export async function apiRequest(endpoint, options = {}) {
   }
   return response;
 }
+
+/**
+ * Downloads a certificate PDF with Bearer authentication and triggers browser download.
+ * Compatible with desktop and mobile (Android Chrome, iOS Safari).
+ */
+export async function downloadCertificatePdf(certificateId, certificateNumber) {
+  const token = localStorage.getItem('legalmetrix_token');
+  const url = getEndpointUrl(`/certificates/${certificateId}/pdf`);
+  const headers = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers,
+  });
+
+  if (!response.ok) {
+    let errorDetail = 'Failed to download certificate PDF';
+    try {
+      const errJson = await response.json();
+      errorDetail = errJson.detail || errorDetail;
+    } catch {
+      errorDetail = response.statusText || errorDetail;
+    }
+    throw new Error(errorDetail);
+  }
+
+  const blob = await response.blob();
+  const blobUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = blobUrl;
+  link.download = `Certificate_${certificateNumber || certificateId}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+}
+

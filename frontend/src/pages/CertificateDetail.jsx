@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { apiRequest } from '../api/client';
+import { apiRequest, getEndpointUrl, downloadCertificatePdf } from '../api/client';
 import { StatusBadge } from '../components/StatusBadge';
 import { DemoDisclaimer } from '../components/DemoDisclaimer';
 
@@ -7,6 +7,7 @@ export const CertificateDetail = ({ certificateId, onNavigate }) => {
   const [cert, setCert] = useState(null);
   const [integrityRes, setIntegrityRes] = useState(null);
   const [checkingIntegrity, setCheckingIntegrity] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -43,6 +44,18 @@ export const CertificateDetail = ({ certificateId, onNavigate }) => {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    if (!cert) return;
+    setDownloadingPdf(true);
+    try {
+      await downloadCertificatePdf(cert.id, cert.certificate_number);
+    } catch (err) {
+      alert(`Could not download PDF certificate: ${err.message}`);
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   if (loading) return <div style={{ padding: '2rem' }}>Loading digital certificate...</div>;
   if (error || !cert) return <div style={{ padding: '2rem', color: '#DC2626' }}>Error: {error || 'Certificate not found'}</div>;
 
@@ -62,19 +75,20 @@ export const CertificateDetail = ({ certificateId, onNavigate }) => {
         </div>
 
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <a
-            href={`/api/v1/certificates/${cert.id}/pdf`}
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn-primary"
-          >
-            📥 Download PDF
-          </a>
           <button
-            className="btn btn-navy"
-            onClick={() => onNavigate('public-verify', cert.certificate_number)}
+            type="button"
+            className="btn btn-primary"
+            onClick={handleDownloadPdf}
+            disabled={downloadingPdf}
           >
-            🔍 Public QR View
+            {downloadingPdf ? '📥 Downloading PDF...' : '📥 Download PDF'}
+          </button>
+          <button
+            type="button"
+            className="btn btn-navy"
+            onClick={() => onNavigate('public-scanner')}
+          >
+            🔎 Public QR View
           </button>
         </div>
       </div>
@@ -181,12 +195,29 @@ export const CertificateDetail = ({ certificateId, onNavigate }) => {
 
           <div style={{ textAlign: 'center', flexShrink: 0 }}>
             <img
-              src={`/api/v1/certificates/${cert.id}/qr`}
-              alt="QR Code"
-              style={{ width: '100px', height: '100px', borderRadius: '4px', border: '1px solid #CBD5E1' }}
+              src={getEndpointUrl(cert.qr_code_url || `/certificates/${cert.id}/qr`)}
+              alt={`Official verification QR Code for ${cert.certificate_number}`}
+              style={{
+                width: '120px',
+                height: '120px',
+                borderRadius: '6px',
+                border: '1px solid #CBD5E1',
+                padding: '4px',
+                background: '#FFFFFF',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.06)'
+              }}
+              onError={(e) => {
+                if (!e.target.dataset.triedFallback) {
+                  e.target.dataset.triedFallback = 'true';
+                  e.target.src = getEndpointUrl(`/certificates/${cert.id}/qr`);
+                }
+              }}
             />
-            <div style={{ fontSize: '0.68rem', color: '#64748B', marginTop: '0.25rem' }}>
-              Scan for Public Verification
+            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#0F2537', marginTop: '0.4rem' }}>
+              Scan to Verify Certificate
+            </div>
+            <div style={{ fontSize: '0.68rem', color: '#64748B' }}>
+              Public Authenticity Route
             </div>
           </div>
         </div>

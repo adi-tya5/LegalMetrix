@@ -92,11 +92,53 @@ def check_integrity(
     res = verify_certificate_integrity(c)
     return CertificateIntegrityResponse(**res)
 
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Query
+from fastapi.security import OAuth2PasswordBearer
+from app.core.security import decode_access_token
+from app.core.config import CERTIFICATES_DIR, QR_DIR
+
+oauth2_optional = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
+
+def get_current_user_flexible(
+    token_header: Optional[str] = Depends(oauth2_optional),
+    token_query: Optional[str] = Query(None, alias="token"),
+    db: Session = Depends(get_db)
+) -> User:
+    raw_token = token_header or token_query
+    if not raw_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    payload = decode_access_token(raw_token)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    user_id = payload.get("sub")
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if user is None or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or inactive"
+        )
+    return user
+
 @router.get("/{certificate_id}/pdf")
 def download_certificate_pdf(
     certificate_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_flexible)
 ):
     if certificate_id.isdigit():
         c = db.query(Certificate).filter(Certificate.id == int(certificate_id)).first()
@@ -109,15 +151,31 @@ def download_certificate_pdf(
     if current_user.role == RoleEnum.USER and c.instrument and c.instrument.owner_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
-    if not c.pdf_path or not os.path.exists(c.pdf_path):
+    # Robust cross-platform path resolution (handles Windows & Linux deployed paths)
+    pdf_file = None
+    if c.pdf_path and os.path.exists(c.pdf_path):
+        pdf_file = c.pdf_path
+    else:
+        candidate_filename = Path(c.pdf_path).name if c.pdf_path else f"certificate_{c.certificate_number.replace('-', '_')}.pdf"
+        candidate_path = CERTIFICATES_DIR / candidate_filename
+        if candidate_path.exists():
+            pdf_file = str(candidate_path)
+            c.pdf_path = pdf_file
+            db.commit()
+
+    if not pdf_file or not os.path.exists(pdf_file):
         from app.services.pdf_service import generate_pdf_certificate
         c.pdf_path = generate_pdf_certificate(c)
         db.commit()
+        pdf_file = c.pdf_path
 
     return FileResponse(
-        path=c.pdf_path,
+        path=pdf_file,
         media_type="application/pdf",
-        filename=f"Certificate_{c.certificate_number}.pdf"
+        filename=f"Certificate_{c.certificate_number}.pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="Certificate_{c.certificate_number}.pdf"'
+        }
     )
 
 @router.get("/{certificate_id}/qr")
@@ -133,13 +191,26 @@ def get_certificate_qr(
     if not c:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Certificate not found")
 
-    if not c.qr_code_path or not os.path.exists(c.qr_code_path):
+    # Robust cross-platform path resolution (handles Windows & Linux deployed paths)
+    qr_file = None
+    if c.qr_code_path and os.path.exists(c.qr_code_path):
+        qr_file = c.qr_code_path
+    else:
+        candidate_filename = Path(c.qr_code_path).name if c.qr_code_path else f"qr_{c.certificate_number.replace('-', '_')}.png"
+        candidate_path = QR_DIR / candidate_filename
+        if candidate_path.exists():
+            qr_file = str(candidate_path)
+            c.qr_code_path = qr_file
+            db.commit()
+
+    if not qr_file or not os.path.exists(qr_file):
         from app.services.qr_service import generate_qr_code_for_certificate
         c.qr_code_path = generate_qr_code_for_certificate(c.certificate_number)
         db.commit()
+        qr_file = c.qr_code_path
 
     return FileResponse(
-        path=c.qr_code_path,
+        path=qr_file,
         media_type="image/png"
     )
 
