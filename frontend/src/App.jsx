@@ -24,6 +24,7 @@ export default function App() {
   const { user, role, isAuthenticated, isLoading } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
   const [targetId, setTargetId] = useState(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Check URL pathname for direct public QR scan (e.g. /verify/CERT-MH-001-0001)
   useEffect(() => {
@@ -32,12 +33,14 @@ export default function App() {
       const certNo = path.replace('/verify/', '');
       setCurrentView('public-verify');
       setTargetId(certNo);
+      setMobileNavOpen(false);
     }
   }, []);
 
   const navigate = (view, id = null) => {
     setCurrentView(view);
     setTargetId(id);
+    setMobileNavOpen(false);
     window.scrollTo(0, 0);
   };
 
@@ -135,9 +138,18 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <Navbar onNavigate={navigate} />
+      <Navbar
+        onNavigate={navigate}
+        onToggleMobileNav={() => setMobileNavOpen(prev => !prev)}
+        mobileNavOpen={mobileNavOpen}
+      />
       <div className="main-content">
-        <Sidebar currentView={currentView} onViewChange={navigate} />
+        <Sidebar
+          currentView={currentView}
+          onViewChange={navigate}
+          mobileNavOpen={mobileNavOpen}
+          onCloseMobileNav={() => setMobileNavOpen(false)}
+        />
         <main className="content-area">
           {renderContent()}
         </main>

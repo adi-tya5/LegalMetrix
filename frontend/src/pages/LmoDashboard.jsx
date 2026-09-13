@@ -43,7 +43,7 @@ export const LmoDashboard = ({ onNavigate, isGatc = false }) => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#0F2537' }}>
             {roleTitle} Inspection Docket
@@ -52,7 +52,7 @@ export const LmoDashboard = ({ onNavigate, isGatc = false }) => {
             Field inspection queue, verification scheduling, and digital test recording docket.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button className="btn btn-outline btn-sm" onClick={loadAssigned}>
             🔄 Refresh Docket
           </button>

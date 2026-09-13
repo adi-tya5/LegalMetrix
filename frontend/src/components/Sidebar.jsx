@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 
-export const Sidebar = ({ currentView, onViewChange }) => {
+export const Sidebar = ({ currentView, onViewChange, mobileNavOpen, onCloseMobileNav }) => {
   const { role } = useAuth();
 
   const getLinks = () => {
@@ -46,39 +46,64 @@ export const Sidebar = ({ currentView, onViewChange }) => {
 
   const links = getLinks();
 
-  return (
-    <aside className="sidebar">
-      <div style={{ padding: '1.25rem 1rem 0.5rem 1rem', borderBottom: '1px solid #F1F5F9' }}>
-        <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          {role || 'USER'} PORTAL
-        </div>
-      </div>
-      <nav className="sidebar-nav">
-        {links.map((link) => (
-          <div
-            key={link.id}
-            className={`sidebar-link ${currentView === link.id ? 'active' : ''}`}
-            onClick={() => onViewChange(link.id)}
-          >
-            <span style={{ fontSize: '1.1rem' }}>{link.icon}</span>
-            <span>{link.label}</span>
-          </div>
-        ))}
-      </nav>
+  const handleLinkClick = (id, param = null) => {
+    onViewChange(id, param);
+    if (onCloseMobileNav) {
+      onCloseMobileNav();
+    }
+  };
 
-      {/* Public QR quick test helper */}
-      <div style={{ marginTop: 'auto', padding: '1rem', borderTop: '1px solid #F1F5F9', background: '#F8FAFC' }}>
-        <div style={{ fontSize: '0.725rem', fontWeight: '700', color: '#64748B', marginBottom: '0.35rem' }}>
-          PUBLIC QR VERIFY
+  return (
+    <>
+      {/* Mobile Drawer Overlay Backdrop */}
+      <div
+        className={`sidebar-overlay ${mobileNavOpen ? 'active' : ''}`}
+        onClick={onCloseMobileNav}
+        aria-hidden="true"
+      />
+
+      <aside className={`sidebar ${mobileNavOpen ? 'mobile-open' : ''}`}>
+        <div style={{ padding: '1.25rem 1rem 0.75rem 1rem', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            {role || 'USER'} PORTAL
+          </div>
+          <button
+            type="button"
+            className="sidebar-close-btn"
+            onClick={onCloseMobileNav}
+            aria-label="Close navigation"
+            title="Close menu"
+          >
+            ✕
+          </button>
         </div>
-        <button
-          className="btn btn-outline btn-sm"
-          style={{ width: '100%', fontSize: '0.75rem', background: '#FFFFFF' }}
-          onClick={() => onViewChange('public-verify', 'CERT-MH-001-0001')}
-        >
-          🔍 View Public /verify
-        </button>
-      </div>
-    </aside>
+        <nav className="sidebar-nav">
+          {links.map((link) => (
+            <div
+              key={link.id}
+              className={`sidebar-link ${currentView === link.id ? 'active' : ''}`}
+              onClick={() => handleLinkClick(link.id)}
+            >
+              <span style={{ fontSize: '1.1rem' }}>{link.icon}</span>
+              <span>{link.label}</span>
+            </div>
+          ))}
+        </nav>
+
+        {/* Public QR quick test helper */}
+        <div style={{ marginTop: 'auto', padding: '1rem', borderTop: '1px solid #F1F5F9', background: '#F8FAFC' }}>
+          <div style={{ fontSize: '0.725rem', fontWeight: '700', color: '#64748B', marginBottom: '0.35rem' }}>
+            PUBLIC QR VERIFY
+          </div>
+          <button
+            className="btn btn-outline btn-sm"
+            style={{ width: '100%', fontSize: '0.75rem', background: '#FFFFFF' }}
+            onClick={() => handleLinkClick('public-verify', 'CERT-MH-001-0001')}
+          >
+            🔍 View Public /verify
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };

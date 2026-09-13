@@ -349,7 +349,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
   return (
     <div style={{ maxWidth: '840px', margin: '0 auto' }}>
       {/* Docket Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
           <button className="btn btn-outline btn-sm" onClick={() => onNavigate('dashboard')} style={{ marginBottom: '0.5rem' }}>
             &larr; Back to Docket
@@ -364,7 +364,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
 
         <div>
           {isSubmitted ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               <span className="badge badge-completed">SUBMITTED &amp; LOCKED</span>
               <StatusBadge status={ver.result} />
             </div>
@@ -378,7 +378,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
 
       {/* Docket Selection Dropdown (if assigned applications exist) */}
       {assignedApps.length > 1 && (
-        <div className="card" style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', padding: '0.75rem 1rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+        <div className="card" style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', padding: '0.75rem 1rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontSize: '1rem' }}>📋</span>
             <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#1E293B' }}>
@@ -387,7 +387,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
           </div>
           <select
             className="form-select"
-            style={{ maxWidth: '440px', fontSize: '0.85rem', padding: '0.35rem 0.75rem' }}
+            style={{ maxWidth: '100%', flex: '1 1 260px', fontSize: '0.85rem', padding: '0.4rem 0.75rem' }}
             value={ver.application_id || ''}
             onChange={(e) => handleSelectApplication(e.target.value)}
           >
@@ -408,7 +408,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
 
       {/* 1. All 12 Required Metadata Fields */}
       <div className="card" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#0F2537', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Docket Metadata &amp; Instrument Specifications
           </div>
@@ -569,6 +569,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
               <input
                 type="number"
                 step="any"
+                inputMode="decimal"
                 className="form-input"
                 value={refVal}
                 onChange={(e) => setRefVal(e.target.value)}
@@ -582,6 +583,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
               <input
                 type="number"
                 step="any"
+                inputMode="decimal"
                 className="form-input"
                 value={obsVal}
                 onChange={(e) => setObsVal(e.target.value)}
@@ -600,7 +602,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
               padding: '1.25rem',
               marginBottom: '1rem'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.75rem' }}>
                 <div>
                   <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: '600', textTransform: 'uppercase' }}>
                     Error Calculation
@@ -613,7 +615,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
                   </div>
                 </div>
 
-                <div style={{ textAlign: 'right' }}>
+                <div style={{ minWidth: '180px' }}>
                   <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
                     Resolved Rule: <strong>{calcPreview.applied_rule_id}</strong> (v{calcPreview.applied_rule_version})
                   </div>
@@ -703,14 +705,14 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
 
         {/* 5. Submit Verification Button */}
         {!isSubmitted && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginBottom: '2rem' }}>
-            <button type="button" className="btn btn-outline" onClick={() => onNavigate('dashboard')}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+            <button type="button" className="btn btn-outline" onClick={() => onNavigate('dashboard')} style={{ minWidth: '100px' }}>
               Cancel
             </button>
             <button
               type="submit"
               className={`btn ${calcPreview?.result === 'PASS' ? 'btn-primary' : 'btn-danger'}`}
-              style={{ padding: '0.8rem 2rem', fontSize: '0.95rem' }}
+              style={{ padding: '0.8rem 1.5rem', fontSize: '0.925rem', flex: '1 1 auto' }}
               disabled={submitting}
             >
               {submitting ? 'Submitting Verification Docket...' : (
@@ -762,7 +764,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
                     type="button"
                     className="btn btn-outline btn-sm"
                     onClick={() => cameraInputRef.current?.click()}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: '600' }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: '600', padding: '0.5rem 0.85rem', flex: '1 1 130px', justifyContent: 'center' }}
                   >
                     📷 Capture Photo
                   </button>
@@ -770,7 +772,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
                     type="button"
                     className="btn btn-outline btn-sm"
                     onClick={() => fileInputRef.current?.click()}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: '600' }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: '600', padding: '0.5rem 0.85rem', flex: '1 1 130px', justifyContent: 'center' }}
                   >
                     📁 Upload Photo
                   </button>
@@ -799,7 +801,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
                   />
                 </div>
                 {evFile ? (
-                  <div style={{ fontSize: '0.8rem', color: '#007A64', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ fontSize: '0.8rem', color: '#007A64', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <span>✓ Ready: <strong>{evFile.name}</strong> ({(evFile.size / 1024).toFixed(1)} KB)</span>
                     <button
                       type="button"
@@ -833,7 +835,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button type="submit" className="btn btn-navy btn-sm" disabled={uploadingEv}>
+              <button type="submit" className="btn btn-navy btn-sm" disabled={uploadingEv} style={{ minHeight: '38px', padding: '0.45rem 1.25rem' }}>
                 {uploadingEv ? 'Uploading...' : 'Upload Evidence'}
               </button>
             </div>
@@ -854,13 +856,15 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.65rem 1rem',
+                  padding: '0.65rem 0.85rem',
                   border: '1px solid #E2E8F0',
                   borderRadius: '6px',
-                  backgroundColor: '#FFFFFF'
+                  backgroundColor: '#FFFFFF',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem'
                 }}
               >
-                <div>
+                <div style={{ flex: '1 1 180px' }}>
                   <span style={{ fontWeight: '700', fontSize: '0.825rem', color: '#007A64' }}>
                     [{ev.category}]
                   </span>{' '}
@@ -870,7 +874,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
                   )}
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                   <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
                     {new Date(ev.uploaded_at).toLocaleTimeString()}
                   </span>

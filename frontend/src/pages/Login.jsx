@@ -28,8 +28,8 @@ export const Login = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div style={{ maxWidth: '480px', margin: '3rem auto', padding: '1rem' }}>
-      <div className="card" style={{ padding: '2rem' }}>
+    <div style={{ maxWidth: '480px', margin: '1.5rem auto', padding: '0.75rem' }}>
+      <div className="card" style={{ padding: 'clamp(1rem, 4vw, 2rem)' }}>
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <div className="brand-logo" style={{ margin: '0 auto 0.75rem auto', width: '48px', height: '48px', fontSize: '1.5rem' }}>
             LM
@@ -94,7 +94,7 @@ export const Login = ({ onLoginSuccess }) => {
           <div style={{ fontSize: '0.78rem', fontWeight: '700', color: '#64748B', textTransform: 'uppercase', marginBottom: '0.75rem', textAlign: 'center' }}>
             Quick-Fill Demo Credentials (SIH 2026)
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.5rem' }}>
             <button
               type="button"
               className="btn btn-outline btn-sm"

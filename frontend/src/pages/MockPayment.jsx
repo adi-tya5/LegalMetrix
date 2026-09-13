@@ -141,7 +141,7 @@ export const MockPayment = ({ applicationId, onNavigate }) => {
               Simulate manipulated frontend amount (e.g. attempt to pay ₹10 instead of ₹{app.fee_amount})
             </label>
             {enableTamperTest && (
-              <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '0.8rem', color: '#DC2626' }}>Tampered payload:</span>
                 <input
                   type="number"
@@ -167,8 +167,8 @@ export const MockPayment = ({ applicationId, onNavigate }) => {
             </label>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-            <button type="button" className="btn btn-outline" onClick={() => onNavigate('dashboard')}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button type="button" className="btn btn-outline" onClick={() => onNavigate('dashboard')} style={{ minWidth: '90px' }}>
               Cancel
             </button>
             <button
@@ -176,6 +176,7 @@ export const MockPayment = ({ applicationId, onNavigate }) => {
               className="btn btn-primary"
               onClick={handlePay}
               disabled={processing}
+              style={{ flex: '1 1 auto' }}
             >
               {processing ? 'Processing Demo Transaction...' : `Pay ₹${app.fee_amount.toFixed(2)} (Demo)`}
             </button>

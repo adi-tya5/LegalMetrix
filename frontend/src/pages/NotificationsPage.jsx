@@ -117,8 +117,8 @@ export const NotificationsPage = ({ onNavigate }) => {
       <DemoDisclaimer />
 
       {/* Filter Tabs & Summary Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.75rem' }}>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.75rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button
             className={`btn btn-sm ${filter === 'ALL' ? 'btn-primary' : 'btn-outline'}`}
             onClick={() => setFilter('ALL')}
@@ -185,8 +185,8 @@ export const NotificationsPage = ({ onNavigate }) => {
                   borderLeft: `4px solid ${style.text}`
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                <div className="notification-card-body" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flex: '1 1 0', minWidth: '0' }}>
                     <span style={{ fontSize: '1.5rem', lineHeight: '1' }}>{style.icon}</span>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
@@ -235,7 +235,7 @@ export const NotificationsPage = ({ onNavigate }) => {
                   </div>
 
                   {/* Actions Column */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end', minWidth: '150px' }}>
+                  <div className="notification-card-actions" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end', minWidth: '150px' }}>
                     {/* Call to action for owners */}
                     {(n.notification_type === 'EXPIRY_SOON' || n.notification_type === 'EXPIRED' || n.notification_type === 'RE_VERIFICATION_REQUIRED') && (
                       <button

@@ -81,14 +81,14 @@ export const ApplyVerification = ({ onNavigate }) => {
       )}
 
       {/* Step Indicator */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div style={{ flex: 1, padding: '0.5rem 0.75rem', background: step >= 1 ? '#007A64' : '#E2E8F0', color: step >= 1 ? 'white' : '#64748B', borderRadius: '6px', fontWeight: '600', fontSize: '0.8rem', textAlign: 'center' }}>
-          1. Select Instrument
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 90px', padding: '0.5rem 0.6rem', background: step >= 1 ? '#007A64' : '#E2E8F0', color: step >= 1 ? 'white' : '#64748B', borderRadius: '6px', fontWeight: '600', fontSize: '0.78rem', textAlign: 'center' }}>
+          1. Select Device
         </div>
-        <div style={{ flex: 1, padding: '0.5rem 0.75rem', background: step >= 2 ? '#007A64' : '#E2E8F0', color: step >= 2 ? 'white' : '#64748B', borderRadius: '6px', fontWeight: '600', fontSize: '0.8rem', textAlign: 'center' }}>
+        <div style={{ flex: '1 1 90px', padding: '0.5rem 0.6rem', background: step >= 2 ? '#007A64' : '#E2E8F0', color: step >= 2 ? 'white' : '#64748B', borderRadius: '6px', fontWeight: '600', fontSize: '0.78rem', textAlign: 'center' }}>
           2. Fee Breakdown
         </div>
-        <div style={{ flex: 1, padding: '0.5rem 0.75rem', background: '#E2E8F0', color: '#64748B', borderRadius: '6px', fontWeight: '600', fontSize: '0.8rem', textAlign: 'center' }}>
+        <div style={{ flex: '1 1 90px', padding: '0.5rem 0.6rem', background: '#E2E8F0', color: '#64748B', borderRadius: '6px', fontWeight: '600', fontSize: '0.78rem', textAlign: 'center' }}>
           3. Mock Payment
         </div>
       </div>
@@ -137,8 +137,8 @@ export const ApplyVerification = ({ onNavigate }) => {
             </select>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
-            <button className="btn btn-primary" onClick={handleFetchFee} disabled={loading || !selectedInstId}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+            <button className="btn btn-primary" onClick={handleFetchFee} disabled={loading || !selectedInstId} style={{ width: '100%' }}>
               {loading ? 'Calculating Fee...' : 'Review Fee Breakdown &rarr;'}
             </button>
           </div>
@@ -154,7 +154,7 @@ export const ApplyVerification = ({ onNavigate }) => {
           </div>
 
           <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '1.25rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
               <span style={{ fontSize: '0.9rem', color: '#166534', fontWeight: '600' }}>
                 {feeBreakdown.component_name}
               </span>
@@ -174,11 +174,11 @@ export const ApplyVerification = ({ onNavigate }) => {
             <strong>Integrity Note:</strong> The backend strictly enforces this authoritative amount. Any client-side price tampering will be automatically rejected.
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <button className="btn btn-outline" onClick={() => setStep(1)}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button className="btn btn-outline" onClick={() => setStep(1)} style={{ minWidth: '90px' }}>
               &larr; Back
             </button>
-            <button className="btn btn-primary" onClick={handleProceedToPayment} disabled={loading}>
+            <button className="btn btn-primary" onClick={handleProceedToPayment} disabled={loading} style={{ flex: '1 1 auto' }}>
               {loading ? 'Generating Application...' : 'Proceed to Demo Payment &rarr;'}
             </button>
           </div>

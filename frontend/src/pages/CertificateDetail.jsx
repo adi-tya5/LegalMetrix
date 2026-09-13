@@ -48,7 +48,7 @@ export const CertificateDetail = ({ certificateId, onNavigate }) => {
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
           <button className="btn btn-outline btn-sm" onClick={() => onNavigate('dashboard')} style={{ marginBottom: '0.5rem' }}>
             &larr; Back to Dashboard
@@ -61,7 +61,7 @@ export const CertificateDetail = ({ certificateId, onNavigate }) => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <a
             href={`/api/v1/certificates/${cert.id}/pdf`}
             target="_blank"
@@ -82,7 +82,7 @@ export const CertificateDetail = ({ certificateId, onNavigate }) => {
       <DemoDisclaimer />
 
       {/* Certificate Official Paper Card */}
-      <div className="card" style={{
+      <div className="card certificate-card" style={{
         border: '2px solid #007A64',
         boxShadow: '0 10px 25px -5px rgba(0, 122, 100, 0.1)',
         padding: '2.5rem',
@@ -94,10 +94,10 @@ export const CertificateDetail = ({ certificateId, onNavigate }) => {
           <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#007A64', letterSpacing: '1px', textTransform: 'uppercase' }}>
             Smart India Hackathon 2026 Prototype &bull; SIH26036
           </div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: '800', color: '#0F2537', marginTop: '0.25rem' }}>
+          <h1 style={{ fontSize: 'clamp(1.2rem, 4.5vw, 1.8rem)', fontWeight: '800', color: '#0F2537', marginTop: '0.25rem' }}>
             LEGALMETRIX VERIFICATION CERTIFICATE
           </h1>
-          <div style={{ fontSize: '0.9rem', color: '#64748B' }}>
+          <div style={{ fontSize: '0.9rem', color: '#64748B', wordBreak: 'break-all' }}>
             Certificate Number: <strong style={{ color: '#0F2537', fontFamily: 'monospace' }}>{cert.certificate_number}</strong>
           </div>
           <div style={{ marginTop: '0.75rem' }}>
@@ -141,7 +141,7 @@ export const CertificateDetail = ({ certificateId, onNavigate }) => {
         </div>
 
         {/* SHA-256 Integrity & QR Code Section */}
-        <div style={{
+        <div className="cert-qr-section" style={{
           background: '#F0FDF4',
           border: '1px solid #007A64',
           borderRadius: '8px',
@@ -149,20 +149,20 @@ export const CertificateDetail = ({ certificateId, onNavigate }) => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          gap: '1rem'
+          gap: '1.25rem'
         }}>
           <div>
             <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#007A64', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               Cryptographic Integrity Fingerprint
             </div>
-            <div style={{ fontSize: '1.3rem', fontWeight: '800', fontFamily: 'monospace', color: '#0F2537', margin: '0.25rem 0' }}>
+            <div style={{ fontSize: 'clamp(1rem, 4vw, 1.3rem)', fontWeight: '800', fontFamily: 'monospace', color: '#0F2537', margin: '0.25rem 0' }}>
               {cert.display_fingerprint}
             </div>
             <div style={{ fontSize: '0.72rem', fontFamily: 'monospace', color: '#64748B', wordBreak: 'break-all' }}>
               SHA-256: {cert.sha256_hash}
             </div>
 
-            <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button
                 className="btn btn-outline btn-sm"
                 onClick={handleVerifyIntegrity}

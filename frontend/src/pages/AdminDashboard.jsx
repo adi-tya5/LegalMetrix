@@ -35,7 +35,7 @@ export const AdminDashboard = ({ onNavigate }) => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#0F2537' }}>
             Directorate Control Centre &amp; Allocation Desk
@@ -44,7 +44,7 @@ export const AdminDashboard = ({ onNavigate }) => {
             Legal Metrology Administration &bull; Verifier Allocation &bull; Rules &amp; Fee Governance
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button className="btn btn-navy" onClick={() => onNavigate('rules')}>
             ⚙️ Rules Engine
           </button>

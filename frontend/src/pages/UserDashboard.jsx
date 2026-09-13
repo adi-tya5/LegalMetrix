@@ -66,14 +66,14 @@ export const UserDashboard = ({ onNavigate }) => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#0F2537' }}>Instrument Owner Portal</h2>
           <p style={{ color: '#64748B', fontSize: '0.875rem' }}>
             Unified view of registered instruments, digital certificates, and verification cycles.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button className="btn btn-primary" onClick={() => onNavigate('register-instrument')}>
             ➕ Register Instrument
           </button>
@@ -160,14 +160,14 @@ export const UserDashboard = ({ onNavigate }) => {
                     borderRadius: '8px',
                     backgroundColor: isUnread ? bg : '#FFFFFF',
                     border: `1px solid ${isUnread ? border : '#E2E8F0'}`,
-                    gap: '1rem',
+                    gap: '0.75rem',
                     flexWrap: 'wrap'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: '280px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: '0' }}>
                     <span style={{ fontSize: '1.25rem' }}>{icon}</span>
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                         <strong style={{ fontSize: '0.9rem', color: '#0F2537' }}>{n.title}</strong>
                         {n.instrument_uid && (
                           <span style={{ fontSize: '0.75rem', background: '#E2E8F0', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: '700' }}>
@@ -181,7 +181,7 @@ export const UserDashboard = ({ onNavigate }) => {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                     {(isExpiry || isExpired || isFail) && (
                       <button
                         className="btn btn-primary btn-sm"

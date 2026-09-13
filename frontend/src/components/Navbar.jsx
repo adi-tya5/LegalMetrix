@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../api/client';
 import { StatusBadge } from './StatusBadge';
 
-export const Navbar = ({ onNavigate }) => {
+export const Navbar = ({ onNavigate, onToggleMobileNav, mobileNavOpen }) => {
   const { user, role, logout, switchRole, DEMO_CREDENTIALS } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -73,64 +73,79 @@ export const Navbar = ({ onNavigate }) => {
 
       {/* Main Navigation Bar */}
       <nav className="navbar">
-        <div className="brand-container" style={{ cursor: 'pointer' }} onClick={() => onNavigate('dashboard')}>
-          <div className="brand-logo">LM</div>
-          <div className="brand-text">
-            <h1>LegalMetrix</h1>
-            <p>Unified Digital Verification &amp; Certification Platform</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          {user && (
+            <button
+              type="button"
+              className="hamburger-btn"
+              onClick={onToggleMobileNav}
+              aria-label="Toggle Navigation Menu"
+              title="Menu"
+            >
+              ☰
+            </button>
+          )}
+          <div className="brand-container" style={{ cursor: 'pointer' }} onClick={() => onNavigate('dashboard')}>
+            <div className="brand-logo">LM</div>
+            <div className="brand-text">
+              <h1>LegalMetrix</h1>
+              <p>Unified Digital Verification &amp; Certification Platform</p>
+            </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <button
                 className="btn btn-outline btn-sm"
                 onClick={() => onNavigate('notifications')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.4rem',
-                  padding: '0.35rem 0.65rem',
+                  gap: '0.35rem',
+                  padding: '0.35rem 0.55rem',
                   position: 'relative'
                 }}
                 title="Notifications & Alerts"
               >
-                <span style={{ fontSize: '1rem' }}>🔔</span>
+                <span style={{ fontSize: '0.95rem' }}>🔔</span>
                 {unreadCount > 0 ? (
                   <span
                     style={{
                       background: '#EF4444',
                       color: '#FFFFFF',
-                      fontSize: '0.7rem',
+                      fontSize: '0.65rem',
                       fontWeight: '800',
                       borderRadius: '9999px',
-                      padding: '0.1rem 0.4rem',
+                      padding: '0.1rem 0.35rem',
                       lineHeight: '1.2'
                     }}
                   >
                     {unreadCount}
                   </span>
                 ) : (
-                  <span style={{ fontSize: '0.75rem', color: '#64748B' }}>0</span>
+                  <span style={{ fontSize: '0.7rem', color: '#64748B' }}>0</span>
                 )}
               </button>
 
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontWeight: '700', fontSize: '0.9rem', color: '#0F2537' }}>
+              <div className="navbar-user-info" style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: '700', fontSize: '0.85rem', color: '#0F2537' }}>
                   {user.full_name}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
+                <div className="navbar-user-org" style={{ fontSize: '0.72rem', color: '#64748B' }}>
                   {user.organization || user.role}
                 </div>
               </div>
 
-              <StatusBadge status={user.role} />
+              <span className="navbar-user-badge">
+                <StatusBadge status={user.role} />
+              </span>
 
               <button
                 className="btn btn-outline btn-sm"
                 onClick={logout}
-                style={{ marginLeft: '0.25rem' }}
+                style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', whiteSpace: 'nowrap' }}
               >
                 Logout
               </button>

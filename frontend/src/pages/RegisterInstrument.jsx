@@ -82,7 +82,7 @@ export const RegisterInstrument = ({ onNavigate }) => {
 
   return (
     <div style={{ maxWidth: '780px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
           <button className="btn btn-outline btn-sm" onClick={() => onNavigate('dashboard')} style={{ marginBottom: '0.5rem' }}>
             &larr; Back to Dashboard
@@ -256,11 +256,11 @@ export const RegisterInstrument = ({ onNavigate }) => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1.5rem' }}>
-            <button type="button" className="btn btn-outline" onClick={() => onNavigate('dashboard')}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+            <button type="button" className="btn btn-outline" onClick={() => onNavigate('dashboard')} style={{ minWidth: '100px' }}>
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button type="submit" className="btn btn-primary" disabled={loading} style={{ flex: '1 1 auto' }}>
               {loading ? 'Registering...' : 'Register Instrument Profile'}
             </button>
           </div>

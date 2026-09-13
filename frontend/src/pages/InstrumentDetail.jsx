@@ -49,7 +49,7 @@ export const InstrumentDetail = ({ instrumentId, onNavigate }) => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
         <div>
           <button
             className="btn btn-outline btn-sm"
@@ -66,10 +66,10 @@ export const InstrumentDetail = ({ instrumentId, onNavigate }) => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <StatusBadge status={instrument.current_status} />
           {needsReverification && (
-            <button className="btn btn-primary" onClick={handleStartReverification}>
+            <button className="btn btn-primary" onClick={handleStartReverification} style={{ flexShrink: 0 }}>
               🔄 Start Re-Verification
             </button>
           )}

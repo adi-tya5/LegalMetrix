@@ -28,7 +28,7 @@ export const AuditLogs = ({ onNavigate }) => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
         <div>
           <button className="btn btn-outline btn-sm" onClick={() => onNavigate('dashboard')} style={{ marginBottom: '0.5rem' }}>
             &larr; Back to Dashboard
@@ -41,10 +41,10 @@ export const AuditLogs = ({ onNavigate }) => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <select
             className="form-select"
-            style={{ width: '180px', padding: '0.4rem' }}
+            style={{ minWidth: '140px', flex: '1 1 140px', padding: '0.4rem' }}
             value={entityFilter}
             onChange={(e) => setEntityFilter(e.target.value)}
           >
@@ -57,7 +57,7 @@ export const AuditLogs = ({ onNavigate }) => {
             <option value="Rule">Rules</option>
           </select>
 
-          <button className="btn btn-outline btn-sm" onClick={loadLogs}>
+          <button className="btn btn-outline btn-sm" onClick={loadLogs} style={{ flexShrink: 0 }}>
             🔄 Refresh
           </button>
         </div>

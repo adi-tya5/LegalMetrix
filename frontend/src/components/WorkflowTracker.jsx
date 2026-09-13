@@ -23,39 +23,41 @@ export const WorkflowTracker = ({ currentStatus }) => {
         9-State Verification Workflow Progress
       </div>
       
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
-        {/* Connecting line */}
-        <div style={{
-          position: 'absolute',
-          top: '16px',
-          left: '20px',
-          right: '20px',
-          height: '3px',
-          backgroundColor: '#E2E8F0',
-          zIndex: 0
-        }} />
+      <div className="workflow-tracker-scroll">
+        <div className="workflow-tracker-inner">
+          {/* Connecting line */}
+          <div style={{
+            position: 'absolute',
+            top: '16px',
+            left: '20px',
+            right: '20px',
+            height: '3px',
+            backgroundColor: '#E2E8F0',
+            zIndex: 0
+          }} />
 
-        {STEPS.map((step, idx) => {
-          let isPassed = currentIndex > idx;
-          let isCurrent = currentIndex === idx;
-          let isFailStep = isFailed && idx === 7;
+          {STEPS.map((step, idx) => {
+            let isPassed = currentIndex > idx;
+            let isCurrent = currentIndex === idx;
+            let isFailStep = isFailed && idx === 7;
 
-          let circleClass = 'step-circle';
-          if (isPassed) circleClass += ' completed';
-          if (isCurrent && !isFailed) circleClass += ' active';
-          if (isFailStep) circleClass += ' failed';
+            let circleClass = 'step-circle';
+            if (isPassed) circleClass += ' completed';
+            if (isCurrent && !isFailed) circleClass += ' active';
+            if (isFailStep) circleClass += ' failed';
 
-          return (
-            <div key={step.key} className="step-item" style={{ zIndex: 1, background: '#FFFFFF', padding: '0 4px' }}>
-              <div className={circleClass}>
-                {isFailStep ? '✕' : (isPassed ? '✓' : idx + 1)}
+            return (
+              <div key={step.key} className="step-item" style={{ zIndex: 1, background: '#FFFFFF', padding: '0 4px' }}>
+                <div className={circleClass}>
+                  {isFailStep ? '✕' : (isPassed ? '✓' : idx + 1)}
+                </div>
+                <div className={`step-label ${isCurrent ? 'active' : ''}`} style={{ fontSize: '0.68rem' }}>
+                  {isFailStep ? 'Failed (Re-verify)' : step.label}
+                </div>
               </div>
-              <div className={`step-label ${isCurrent ? 'active' : ''}`} style={{ fontSize: '0.68rem' }}>
-                {isFailStep ? 'Failed (Re-verify)' : step.label}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {isFailed && (
