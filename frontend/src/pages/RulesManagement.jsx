@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../api/client';
 import { DemoDisclaimer } from '../components/DemoDisclaimer';
+import { ResponsiveTable } from '../components/ResponsiveTable';
+import { SkeletonTable } from '../components/SkeletonLoader';
+import { ArrowLeft, Sliders, Edit, Check, X, RefreshCw } from 'lucide-react';
 
 export const RulesManagement = ({ onNavigate }) => {
   const [rules, setRules] = useState([]);
@@ -13,7 +16,7 @@ export const RulesManagement = ({ onNavigate }) => {
     setLoading(true);
     try {
       const data = await apiRequest('/rules/');
-      setRules(data);
+      setRules(data || []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -59,98 +62,183 @@ export const RulesManagement = ({ onNavigate }) => {
     }
   };
 
-  if (loading) return <div style={{ padding: '2rem' }}>Loading Rules Engine...</div>;
-
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+    <div className="dashboard-container">
+      <div className="page-header-block">
         <div>
-          <button className="btn btn-outline btn-sm" onClick={() => onNavigate('dashboard')} style={{ marginBottom: '0.5rem' }}>
-            &larr; Back to Dashboard
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => onNavigate('dashboard')}
+            style={{ marginBottom: '0.5rem' }}
+          >
+            <ArrowLeft size={14} />
+            <span>Back to Dashboard</span>
           </button>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#0F2537' }}>
-            Configurable &amp; Version-Controlled Rules Engine
-          </h2>
-          <p style={{ color: '#64748B', fontSize: '0.85rem' }}>
-            Hierarchical rule resolution: Exact (Type+Class+Param) &rarr; Fallback &rarr; Generic Default &rarr; Demo Fallback.
+          <h1 className="page-main-title">Rules Governance Engine</h1>
+          <p className="page-sub-title">
+            Hierarchical rule resolution: Exact (Type+Class+Param) &rarr; Fallback &rarr; Generic Default &rarr; Demo Fallback
           </p>
         </div>
+
+        <div className="page-actions-group">
+          <button type="button" className="btn btn-outline btn-sm" onClick={loadRules}>
+            <RefreshCw size={14} />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
-      <DemoDisclaimer customText="Demonstration Configuration — actual permissible limits must be configured according to applicable instrument, test conditions, jurisdiction, and current regulatory requirements. Historical verification calculations are preserved permanently." />
+      <DemoDisclaimer customText="Demonstration Configuration — actual permissible limits must be configured according to applicable instrument, test conditions, jurisdiction, and regulatory requirements. Historical verification records remain permanently preserved." />
 
-      {error && <div style={{ color: '#DC2626', marginBottom: '1rem' }}>{error}</div>}
+      {error && <div className="error-banner">{error}</div>}
 
-      {/* Quick Test Case 3 Helper Card */}
-      <div className="card" style={{ background: '#F8FAFC', border: '1px dashed #007A64' }}>
-        <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#007A64', marginBottom: '0.35rem' }}>
-          💡 SIH Test Case 3 Live Simulation:
+      <div className="card" style={{ background: '#F8FAFC', border: '1px dashed #007A64', marginBottom: '1.5rem' }}>
+        <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#007A64', marginBottom: '0.25rem' }}>
+          💡 SIH Live Verification Rule Adjustment:
         </div>
         <div style={{ fontSize: '0.8rem', color: '#334155' }}>
-          For <strong>RULE-DWM-001</strong> (Digital Weighing Machine), change the permissible tolerance from <strong>±0.50%</strong> to <strong>±0.10%</strong>.
-          Notice that a +0.15% reading immediately changes from PASS to FAIL, while already-issued historical certificates stay unaffected!
+          For <strong>RULE-DWM-001</strong> (Digital Weighing Machine), change the permissible tolerance from <strong>±0.50%</strong> to <strong>±0.10%</strong>. A +0.15% test reading immediately transitions to FAIL, while already-issued historical certificates remain immutable.
         </div>
       </div>
 
-      {/* Rules Table */}
-      <div className="card">
-        <div className="card-header">
-          <div className="card-title">
-            <span>⚙️</span> Active Rule Hierarchy
+      <div className="section-card">
+        <div className="section-card-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Sliders size={18} className="text-teal" />
+            <h3 className="section-card-title">Active Rule Hierarchy ({rules.length})</h3>
           </div>
         </div>
 
-        <div className="table-container">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th>Rule ID</th>
-                <th>Instrument Type</th>
-                <th>Accuracy Class</th>
-                <th>Test Parameter</th>
-                <th>Permissible Limit</th>
-                <th>Period</th>
-                <th>Version</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rules.map((rule) => (
-                <tr key={rule.id}>
-                  <td style={{ fontWeight: '700', fontFamily: 'monospace', color: '#007A64' }}>{rule.rule_id}</td>
-                  <td style={{ fontWeight: '600' }}>{rule.instrument_type}</td>
-                  <td>{rule.accuracy_class || 'Any'}</td>
-                  <td>{rule.test_parameter}</td>
-                  <td style={{ fontWeight: '700', color: '#0F2537' }}>
-                    ±{rule.permissible_limit_value.toFixed(2)}%
-                  </td>
-                  <td>{rule.verification_period_days} Days</td>
-                  <td>{rule.version}</td>
-                  <td>
-                    <span className={`badge ${rule.is_active ? 'badge-valid' : 'badge-expired'}`}>
-                      {rule.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '0.4rem' }}>
-                      <button className="btn btn-outline btn-sm" onClick={() => handleEdit(rule)}>
-                        ✏️ Edit Limit
-                      </button>
-                      <button
-                        className="btn btn-outline btn-sm"
-                        onClick={() => handleToggleActive(rule)}
-                        style={{ fontSize: '0.75rem' }}
-                      >
-                        {rule.is_active ? 'Deactivate' : 'Activate'}
-                      </button>
+        {loading ? (
+          <SkeletonTable rows={4} cols={6} />
+        ) : (
+          <ResponsiveTable
+            columns={[
+              {
+                key: 'rule_id',
+                label: 'Rule ID',
+                render: (row) => (
+                  <span style={{ fontWeight: '700', fontFamily: 'monospace', color: '#007A64' }}>
+                    {row.rule_id}
+                  </span>
+                )
+              },
+              {
+                key: 'instrument_type',
+                label: 'Instrument Type',
+                render: (row) => (
+                  <div>
+                    <strong>{row.instrument_type}</strong>
+                    <div style={{ fontSize: '0.72rem', color: '#64748B' }}>Class: {row.accuracy_class || 'Any'}</div>
+                  </div>
+                )
+              },
+              {
+                key: 'test_parameter',
+                label: 'Parameter',
+                render: (row) => row.test_parameter
+              },
+              {
+                key: 'permissible_limit_value',
+                label: 'Permissible Limit',
+                render: (row) => (
+                  <strong style={{ color: '#0F2537' }}>
+                    ±{row.permissible_limit_value.toFixed(2)}%
+                  </strong>
+                )
+              },
+              {
+                key: 'verification_period_days',
+                label: 'Validity Period',
+                render: (row) => `${row.verification_period_days} Days`
+              },
+              {
+                key: 'status',
+                label: 'Status',
+                render: (row) => (
+                  <span className={`badge ${row.is_active ? 'badge-valid' : 'badge-expired'}`}>
+                    ● {row.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                )
+              },
+              {
+                key: 'actions',
+                label: 'Actions',
+                isAction: true,
+                render: (row) => (
+                  <div style={{ display: 'flex', gap: '0.35rem' }}>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      onClick={() => handleEdit(row)}
+                    >
+                      <Edit size={12} />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      onClick={() => handleToggleActive(row)}
+                    >
+                      {row.is_active ? 'Disable' : 'Enable'}
+                    </button>
+                  </div>
+                )
+              }
+            ]}
+            data={rules}
+            renderMobileCard={(row) => (
+              <div>
+                <div className="mobile-card-header">
+                  <div>
+                    <span className="mobile-card-title-label">Rule</span>
+                    <div className="mobile-card-title-val font-mono" style={{ color: '#007A64' }}>
+                      {row.rule_id}
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                  <span className={`badge ${row.is_active ? 'badge-valid' : 'badge-expired'}`}>
+                    ● {row.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+
+                <div className="mobile-card-row">
+                  <span className="mobile-card-label">Instrument</span>
+                  <span className="mobile-card-val">{row.instrument_type}</span>
+                </div>
+
+                <div className="mobile-card-row">
+                  <span className="mobile-card-label">Permissible Limit</span>
+                  <span className="mobile-card-val" style={{ fontWeight: '700' }}>
+                    ±{row.permissible_limit_value.toFixed(2)}%
+                  </span>
+                </div>
+
+                <div className="mobile-card-row">
+                  <span className="mobile-card-label">Validity</span>
+                  <span className="mobile-card-val">{row.verification_period_days} Days</span>
+                </div>
+
+                <div className="mobile-card-actions">
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={() => handleEdit(row)}
+                  >
+                    Edit Limit
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={() => handleToggleActive(row)}
+                  >
+                    {row.is_active ? 'Deactivate' : 'Activate'}
+                  </button>
+                </div>
+              </div>
+            )}
+          />
+        )}
       </div>
 
       {/* Edit Rule Modal */}
@@ -159,7 +247,7 @@ export const RulesManagement = ({ onNavigate }) => {
           <div className="modal-content">
             <div className="card-header">
               <div className="card-title">
-                Edit Permissible Limit: {editingRule.rule_id}
+                Edit Tolerance: {editingRule.rule_id}
               </div>
               <button className="btn btn-outline btn-sm" onClick={() => setEditingRule(null)}>✕</button>
             </div>

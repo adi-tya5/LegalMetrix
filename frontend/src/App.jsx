@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
+import { BottomNav } from './components/BottomNav';
 import { Login } from './pages/Login';
 import { UserDashboard } from './pages/UserDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
@@ -70,10 +71,11 @@ export default function App() {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC' }}>
         <div style={{ textAlign: 'center' }}>
-          <div className="brand-logo" style={{ margin: '0 auto 1rem auto' }}>LM</div>
-          <div style={{ fontWeight: '700', color: '#0F2537' }}>Loading LegalMetrix Platform...</div>
+          <div className="brand-logo" style={{ margin: '0 auto 1rem auto', width: '48px', height: '48px', fontSize: '1.4rem' }}>LM</div>
+          <div style={{ fontWeight: '800', fontSize: '1.1rem', color: '#0F2537' }}>Loading LegalMetrix Platform...</div>
+          <div style={{ fontSize: '0.85rem', color: '#64748B', marginTop: '0.35rem' }}>Verifying secure session credentials</div>
         </div>
       </div>
     );
@@ -108,7 +110,17 @@ export default function App() {
         return renderRoleDashboard();
 
       case 'instruments':
-        return role === 'ADMIN' ? <Reports onNavigate={navigate} /> : <UserDashboard onNavigate={navigate} />;
+        return role === 'ADMIN'
+          ? <Reports onNavigate={navigate} />
+          : <UserDashboard initialTab="instruments" onNavigate={navigate} />;
+
+      case 'applications':
+        return role === 'ADMIN'
+          ? <AdminDashboard onNavigate={navigate} />
+          : <UserDashboard initialTab="applications" onNavigate={navigate} />;
+
+      case 'certificates':
+        return <UserDashboard initialTab="certificates" onNavigate={navigate} />;
 
       case 'instrument-detail':
         return <InstrumentDetail instrumentId={targetId} onNavigate={navigate} />;
@@ -123,6 +135,7 @@ export default function App() {
         return <MockPayment applicationId={targetId} onNavigate={navigate} />;
 
       case 'allocation':
+      case 'scheduling':
         return <AllocationManagement selectedAppId={targetId} onNavigate={navigate} />;
 
       case 'field-verification':
@@ -175,6 +188,15 @@ export default function App() {
           {renderContent()}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation Bar for rapid thumb access */}
+      {role === 'USER' && (
+        <BottomNav
+          currentView={currentView}
+          onNavigate={navigate}
+          onOpenDrawer={() => setMobileNavOpen(true)}
+        />
+      )}
     </div>
   );
 }

@@ -2,6 +2,24 @@ import React, { useState, useEffect, useRef } from 'react';
 import { apiRequest } from '../api/client';
 import { StatusBadge } from '../components/StatusBadge';
 import { DemoDisclaimer } from '../components/DemoDisclaimer';
+import { SkeletonCard } from '../components/SkeletonLoader';
+import {
+  Camera,
+  Upload,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  ArrowLeft,
+  Navigation,
+  Scale,
+  FileCheck,
+  Shield,
+  Trash2,
+  RotateCcw,
+  Check,
+  MapPin,
+  ClipboardList
+} from 'lucide-react';
 
 const EVIDENCE_CATEGORIES = [
   'Instrument Front View',
@@ -27,7 +45,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
   const [sealCondition, setSealCondition] = useState('Intact');
   const [displayCondition, setDisplayCondition] = useState('Clear and Legible');
   const [remarks, setRemarks] = useState('');
-  
+
   // Test Data
   const [refVal, setRefVal] = useState('1000');
   const [obsVal, setObsVal] = useState('1001.5');
@@ -54,19 +72,17 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
     setLoading(true);
     setError(null);
     try {
-      // 1. Fetch assigned applications for docket queue selector
       let apps = [];
       try {
         apps = await apiRequest('/applications/');
         setAssignedApps(apps || []);
       } catch (err) {
-        console.warn('Could not fetch assigned applications list', err);
+        console.warn('Could not fetch applications list', err);
       }
 
       let chosenVerId = targetId || activeVerId || verificationId;
 
       if (!chosenVerId) {
-        // Look for existing active verifications first
         try {
           const activeVers = await apiRequest('/verifications/?active_only=true');
           if (activeVers && activeVers.length > 0) {
@@ -76,10 +92,9 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
           console.warn('Could not fetch active verifications', err);
         }
 
-        // If still none, check assigned applications
         if (!chosenVerId && apps && apps.length > 0) {
-          const scheduledApp = apps.find(a => 
-            a.current_status === 'VERIFICATION_SCHEDULED' || 
+          const scheduledApp = apps.find(a =>
+            a.current_status === 'VERIFICATION_SCHEDULED' ||
             a.current_status === 'UNDER_VERIFICATION'
           ) || apps[0];
 
@@ -94,7 +109,6 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
       }
 
       if (!chosenVerId) {
-        // No assigned verifications or applications available
         setVer(null);
         setInst(null);
         setLoading(false);
@@ -118,7 +132,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
       if (v.corrective_action) setCorrectiveAction(v.corrective_action);
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Unable to load verification docket.');
+      setError('Unable to load verification docket right now.');
     } finally {
       setLoading(false);
     }
@@ -171,7 +185,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
           setLng(pos.coords.longitude.toFixed(6));
           setAccuracy(pos.coords.accuracy.toFixed(1));
         },
-        (err) => alert('GPS Capture notice: ' + err.message + '. (GPS is optional and does not block verification)')
+        (err) => alert('GPS notice: ' + err.message + '. (GPS is optional and does not block verification)')
       );
     }
   };
@@ -233,11 +247,11 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
 
     if (calcPreview?.result === 'FAIL') {
       if (!failureReason.trim()) {
-        alert('failure_reason is REQUIRED when verification result is FAIL!');
+        alert('Failure reason is REQUIRED when verification result is FAIL!');
         return;
       }
       if (!correctiveAction.trim()) {
-        alert('corrective_action is REQUIRED when verification result is FAIL!');
+        alert('Corrective action is REQUIRED when verification result is FAIL!');
         return;
       }
     }
@@ -266,10 +280,10 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
       });
 
       if (res.result === 'PASS') {
-        alert(`Verification PASSED! Digital Certificate ${res.certificate_number} generated with SHA-256 integrity seal.`);
+        alert(`Verification PASSED! Digital Certificate ${res.certificate_number} issued with SHA-256 seal.`);
         onNavigate('certificate-detail', res.certificate_id);
       } else {
-        alert('Verification FAILED. Status set to RE_VERIFICATION_REQUIRED. Historical record created; user can now start re-verification.');
+        alert('Verification FAILED. Application status set to RE_VERIFICATION_REQUIRED.');
         onNavigate('instrument-detail', res.instrument_id);
       }
     } catch (err) {
@@ -279,220 +293,174 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
     }
   };
 
-  // Loading State
   if (loading) {
     return (
-      <div style={{ maxWidth: '840px', margin: '2rem auto', textAlign: 'center', padding: '3rem' }}>
-        <div className="spinner" style={{ margin: '0 auto 1rem auto' }}></div>
-        <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#0F2537' }}>
-          Loading field verification docket...
-        </div>
-        <div style={{ fontSize: '0.875rem', color: '#64748B', marginTop: '0.5rem' }}>
-          Querying assigned inspection queue and retrieving metrology configuration.
-        </div>
+      <div className="dashboard-container" style={{ maxWidth: '820px', margin: '0 auto' }}>
+        <SkeletonCard rows={2} />
+        <SkeletonCard rows={5} />
       </div>
     );
   }
 
-  // Error State with Retry
   if (error && !ver) {
     return (
-      <div style={{ maxWidth: '840px', margin: '2rem auto', padding: '1rem' }}>
-        <div className="card" style={{ padding: '2.5rem', textAlign: 'center', border: '1px solid #FECACA', background: '#FEF2F2' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
-          <h3 style={{ color: '#991B1B', fontWeight: '800', marginBottom: '0.5rem' }}>
-            Unable to load verification docket.
-          </h3>
-          <p style={{ color: '#7F1D1D', fontSize: '0.875rem', marginBottom: '1.5rem', maxWidth: '500px', margin: '0 auto 1.5rem auto' }}>
-            {error}
-          </p>
-          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-            <button className="btn btn-primary btn-sm" onClick={() => loadDocket(activeVerId)}>
-              🔄 Retry
-            </button>
-            <button className="btn btn-outline btn-sm" onClick={() => onNavigate('dashboard')}>
-              &larr; Return to Dashboard
-            </button>
+      <div className="dashboard-container" style={{ maxWidth: '820px', margin: '0 auto' }}>
+        <div className="card" style={{ padding: '2.5rem', textAlign: 'center' }}>
+          <AlertTriangle size={36} color="#DC2626" style={{ margin: '0 auto 1rem auto' }} />
+          <h3>Unable to Load Verification Docket</h3>
+          <p style={{ color: '#64748B', marginTop: '0.5rem' }}>{error}</p>
+          <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center', gap: '0.75rem' }}>
+            <button className="btn btn-primary" onClick={() => loadDocket(activeVerId)}>Retry</button>
+            <button className="btn btn-outline" onClick={() => onNavigate('dashboard')}>Dashboard</button>
           </div>
         </div>
       </div>
     );
   }
 
-  // Empty State
   if (!ver || !inst) {
     return (
-      <div style={{ maxWidth: '840px', margin: '2rem auto', padding: '1rem' }}>
-        <div className="card" style={{ padding: '3rem 2rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
-          <h3 style={{ color: '#0F2537', fontWeight: '800', marginBottom: '0.5rem' }}>
-            No assigned verifications currently available.
-          </h3>
-          <p style={{ color: '#64748B', fontSize: '0.875rem', maxWidth: '480px', margin: '0 auto 1.5rem auto' }}>
-            There are currently no verification applications assigned to your docket queue in scheduled or active verification states.
+      <div className="dashboard-container" style={{ maxWidth: '820px', margin: '0 auto' }}>
+        <div className="card" style={{ padding: '3rem 1.5rem', textAlign: 'center' }}>
+          <ClipboardList size={48} color="#0F2537" style={{ margin: '0 auto 1rem auto' }} />
+          <h3>No Assigned Verifications in Queue</h3>
+          <p style={{ color: '#64748B', maxWidth: '450px', margin: '0.5rem auto 1.5rem auto' }}>
+            There are currently no verification dockets assigned to your officer account in scheduled or active verification states.
           </p>
-          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-            <button className="btn btn-primary btn-sm" onClick={() => loadDocket(null)}>
-              🔄 Refresh Queue
-            </button>
-            <button className="btn btn-outline btn-sm" onClick={() => onNavigate('dashboard')}>
-              &larr; Return to Dashboard
-            </button>
-          </div>
+          <button className="btn btn-primary" onClick={() => onNavigate('dashboard')}>
+            Return to Dashboard
+          </button>
         </div>
       </div>
     );
   }
 
   const isSubmitted = ver.is_submitted;
+  const isPass = calcPreview ? calcPreview.result === 'PASS' : true;
 
   return (
-    <div style={{ maxWidth: '840px', margin: '0 auto' }}>
-      {/* Docket Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+    <div className="dashboard-container mobile-first-container" style={{ maxWidth: '820px', margin: '0 auto' }}>
+      {/* Top Header */}
+      <div className="page-header-block">
         <div>
-          <button className="btn btn-outline btn-sm" onClick={() => onNavigate('dashboard')} style={{ marginBottom: '0.5rem' }}>
-            &larr; Back to Docket
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => onNavigate('dashboard')}
+            style={{ marginBottom: '0.5rem' }}
+          >
+            <ArrowLeft size={14} />
+            <span>Back to Docket</span>
           </button>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#0F2537' }}>
-            Verification Docket: {ver.verification_number}
-          </h2>
-          <p style={{ color: '#64748B', fontSize: '0.85rem' }}>
-            Officer: <strong>{ver.verifier_name}</strong> ({ver.verifier_role}) &bull; Date: {new Date(ver.verification_date).toLocaleDateString()}
+          <h1 className="page-main-title">FIELD VERIFICATION</h1>
+          <p className="page-sub-title">
+            Application #{ver.application_number || `LM-APP-${ver.application_id}`} &bull; Docket #{ver.verification_number}
           </p>
         </div>
 
-        <div>
+        <div className="page-actions-group">
           {isSubmitted ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <span className="badge badge-completed">SUBMITTED &amp; LOCKED</span>
-              <StatusBadge status={ver.result} />
-            </div>
+            <span className="badge badge-valid">✓ SUBMITTED &amp; LOCKED</span>
           ) : (
-            <span className="badge badge-active">UNDER VERIFICATION</span>
+            <span className="badge badge-active">● UNDER VERIFICATION</span>
           )}
         </div>
       </div>
 
       <DemoDisclaimer />
 
-      {/* Docket Selection Dropdown (if assigned applications exist) */}
+      {/* Switch Docket Dropdown if multiple assigned */}
       {assignedApps.length > 1 && (
-        <div className="card" style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', padding: '0.75rem 1rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1rem' }}>📋</span>
-            <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#1E293B' }}>
+        <div className="card" style={{ padding: '0.75rem 1rem', marginBottom: '1.25rem', background: '#F8FAFC' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#0F2537' }}>
               Switch Assigned Docket:
             </span>
+            <select
+              className="form-select"
+              style={{ maxWidth: '100%', flex: '1 1 240px', fontSize: '0.85rem' }}
+              value={ver.application_id || ''}
+              onChange={(e) => handleSelectApplication(e.target.value)}
+            >
+              {assignedApps.map(a => (
+                <option key={a.id} value={a.id}>
+                  {a.application_number} — {a.instrument_type} ({a.current_status})
+                </option>
+              ))}
+            </select>
           </div>
-          <select
-            className="form-select"
-            style={{ maxWidth: '100%', flex: '1 1 260px', fontSize: '0.85rem', padding: '0.4rem 0.75rem' }}
-            value={ver.application_id || ''}
-            onChange={(e) => handleSelectApplication(e.target.value)}
-          >
-            {assignedApps.map(a => (
-              <option key={a.id} value={a.id}>
-                {a.application_number} — {a.instrument?.instrument_type || 'Instrument'} ({a.instrument?.instrument_uid || 'UID'}) [{a.current_status}]
-              </option>
-            ))}
-          </select>
         </div>
       )}
 
-      {error && (
-        <div style={{ padding: '0.75rem', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', color: '#991B1B', borderRadius: '6px', marginBottom: '1.25rem', fontSize: '0.875rem' }}>
-          {error}
-        </div>
-      )}
-
-      {/* 1. All 12 Required Metadata Fields */}
-      <div className="card" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#0F2537', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Docket Metadata &amp; Instrument Specifications
+      {/* Top Instrument Identity Card */}
+      <div className="card instrument-identity-card" style={{ borderLeft: '4px solid #007A64', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+          <div>
+            <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              INSTRUMENT IDENTITY
+            </span>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#0F2537' }}>
+              {inst.instrument_type}
+            </h3>
           </div>
-          <span className="badge badge-active" style={{ fontSize: '0.75rem' }}>
-            {ver.current_status || (ver.is_submitted ? 'COMPLETED' : 'UNDER_VERIFICATION')}
-          </span>
+          <span className="badge badge-info font-mono">{inst.instrument_uid}</span>
         </div>
 
-        <div className="grid-3" style={{ fontSize: '0.85rem', rowGap: '0.75rem' }}>
+        <div className="grid-3" style={{ fontSize: '0.85rem', rowGap: '0.5rem' }}>
           <div>
-            <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Application ID:</span>
-            <strong>{ver.application_number || `APP-${ver.application_id}`}</strong>
+            <span style={{ color: '#64748B', display: 'block', fontSize: '0.72rem' }}>Serial Number</span>
+            <strong className="font-mono">{inst.serial_number}</strong>
           </div>
           <div>
-            <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Instrument ID / UID:</span>
-            <strong>{ver.instrument_uid || inst.instrument_uid}</strong>
+            <span style={{ color: '#64748B', display: 'block', fontSize: '0.72rem' }}>Capacity &amp; Class</span>
+            <strong>{inst.max_capacity} {inst.unit} ({inst.accuracy_class || 'Class III'})</strong>
           </div>
           <div>
-            <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Instrument Type:</span>
-            <strong>{ver.instrument_type || inst.instrument_type}</strong>
-          </div>
-          <div>
-            <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Manufacturer:</span>
-            <strong>{ver.manufacturer || inst.manufacturer || 'N/A'}</strong>
-          </div>
-          <div>
-            <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Model Number:</span>
-            <strong>{ver.model_number || inst.model_number || 'N/A'}</strong>
-          </div>
-          <div>
-            <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Serial Number:</span>
-            <strong>{ver.serial_number || inst.serial_number || 'N/A'}</strong>
-          </div>
-          <div>
-            <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Max Capacity:</span>
-            <strong>{ver.max_capacity || inst.max_capacity} {ver.unit || inst.unit}</strong>
-          </div>
-          <div>
-            <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Accuracy Class:</span>
-            <strong>{ver.accuracy_class || inst.accuracy_class || 'Class III'}</strong>
-          </div>
-          <div>
-            <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Applicant / Owner:</span>
-            <strong>{ver.applicant_name || 'Registered Owner'}</strong>
-          </div>
-          <div>
-            <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Scheduled Date:</span>
-            <strong>{ver.scheduled_date ? new Date(ver.scheduled_date).toLocaleDateString() : 'Immediate / On Demand'}</strong>
-          </div>
-          <div>
-            <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Assigned Verifier:</span>
-            <strong>{ver.verifier_name || 'Assigned Officer'} ({ver.verifier_role || 'LMO'})</strong>
-          </div>
-          <div>
-            <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Workflow State:</span>
-            <strong>{ver.current_status || (ver.is_submitted ? 'VERIFICATION_COMPLETED' : 'UNDER_VERIFICATION')}</strong>
+            <span style={{ color: '#64748B', display: 'block', fontSize: '0.72rem' }}>Manufacturer</span>
+            <strong>{inst.manufacturer} ({inst.model_number || 'Standard'})</strong>
           </div>
         </div>
       </div>
 
       <form onSubmit={handleSubmitVerification}>
-        {/* 2. Physical Checklist */}
-        <div className="card">
-          <div className="card-header">
-            <div className="card-title">
-              <span>🔍</span> Inspection Checklist &amp; Physical Condition
+        {/* ================= SECTION 1: INSTRUMENT DETAILS ================= */}
+        <div className="section-card">
+          <div className="section-card-header">
+            <h3 className="section-card-title">1. Instrument Details</h3>
+          </div>
+          <div className="grid-2" style={{ fontSize: '0.85rem', gap: '1rem' }}>
+            <div>
+              <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Registered Owner</span>
+              <strong>{inst.owner_name}</strong>
+            </div>
+            <div>
+              <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Installation Location</span>
+              <span>{inst.location_address || 'On-site facility'}</span>
             </div>
           </div>
+          <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid #E2E8F0' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: '600', fontSize: '0.9rem', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={identityConfirmed}
+                onChange={(e) => setIdentityConfirmed(e.target.checked)}
+                disabled={isSubmitted}
+                style={{ width: '18px', height: '18px', accentColor: '#007A64' }}
+              />
+              <span>Instrument Physical Identity Confirmed (Serial Plate matches Application)</span>
+            </label>
+          </div>
+        </div>
 
-          <div className="grid-2">
-            <div className="form-group">
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600', fontSize: '0.875rem', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={identityConfirmed}
-                  onChange={(e) => setIdentityConfirmed(e.target.checked)}
-                  disabled={isSubmitted}
-                />
-                Instrument Identity Confirmed (Serial plate &amp; Model match)
-              </label>
-            </div>
+        {/* ================= SECTION 2: CONDITION & SEAL ================= */}
+        <div className="section-card">
+          <div className="section-card-header">
+            <h3 className="section-card-title">2. Condition &amp; Seal Checklist</h3>
+          </div>
 
+          <div className="grid-3">
             <div className="form-group">
-              <label className="form-label">Physical Structure Condition</label>
+              <label className="form-label">Physical Structure</label>
               <select
                 className="form-select"
                 value={physicalCondition}
@@ -504,11 +472,9 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
                 <option value="Damaged">Damaged / Defective</option>
               </select>
             </div>
-          </div>
 
-          <div className="grid-2">
             <div className="form-group">
-              <label className="form-label">Security Seal / Stamp Condition</label>
+              <label className="form-label">Security Seal / Mark</label>
               <select
                 className="form-select"
                 value={sealCondition}
@@ -522,7 +488,7 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Digital Display / Scale Readability</label>
+              <label className="form-label">Digital Display / Scale</label>
               <select
                 className="form-select"
                 value={displayCondition}
@@ -536,12 +502,12 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Inspection Remarks</label>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Officer Inspection Remarks</label>
             <textarea
               className="form-textarea"
               rows={2}
-              placeholder="Officer inspection notes regarding testing environment and device setup"
+              placeholder="Notes on environment, temperature, standard weight IDs, or test condition..."
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
               disabled={isSubmitted}
@@ -549,23 +515,17 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
           </div>
         </div>
 
-        {/* 3. Measurement Test Data & Dynamic Calculation Engine */}
-        <div className="card">
-          <div className="card-header">
-            <div className="card-title">
-              <span>⚖️</span> Metrological Test Data &amp; Rules Engine Calculation
-            </div>
-            {calcPreview && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.8rem', color: '#64748B' }}>Calculated Result:</span>
-                <StatusBadge status={calcPreview.result} />
-              </div>
-            )}
+        {/* ================= SECTION 3: TEST READINGS & VISUAL CALCULATION ================= */}
+        <div className="section-card">
+          <div className="section-card-header">
+            <h3 className="section-card-title">3. Test Readings &amp; Error Calculation</h3>
           </div>
 
           <div className="grid-2">
             <div className="form-group">
-              <label className="form-label">Reference / True Value (Standard Calibrated Weight)</label>
+              <label className="form-label">
+                Reference Value (Standard Calibrated Weight)
+              </label>
               <input
                 type="number"
                 step="any"
@@ -579,7 +539,9 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Observed / Indicated Value (Instrument Reading)</label>
+              <label className="form-label">
+                Observed Value (Instrument Display Reading)
+              </label>
               <input
                 type="number"
                 step="any"
@@ -593,159 +555,57 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
             </div>
           </div>
 
-          {/* Real-time Calculation Panel */}
+          {/* Visually Understandable Calculation Panel */}
           {calcPreview && (
-            <div style={{
-              background: calcPreview.result === 'PASS' ? '#ECFDF5' : '#FEF2F2',
-              border: `1px solid ${calcPreview.result === 'PASS' ? '#A7F3D0' : '#FECACA'}`,
-              borderRadius: '8px',
-              padding: '1.25rem',
-              marginBottom: '1rem'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <div>
-                  <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: '600', textTransform: 'uppercase' }}>
-                    Error Calculation
+            <div className={`verification-calc-box ${calcPreview.result === 'PASS' ? 'calc-pass' : 'calc-fail'}`}>
+              <div className="calc-summary-grid">
+                <div className="calc-stat-unit">
+                  <span className="calc-stat-label">Reference Value</span>
+                  <span className="calc-stat-num font-mono">{refVal}</span>
+                </div>
+
+                <div className="calc-stat-unit">
+                  <span className="calc-stat-label">Observed Value</span>
+                  <span className="calc-stat-num font-mono">{obsVal}</span>
+                </div>
+
+                <div className="calc-stat-unit">
+                  <span className="calc-stat-label">Measurement Error</span>
+                  <span className={`calc-stat-num font-mono ${calcPreview.result === 'PASS' ? 'text-teal' : 'text-danger'}`}>
+                    {calcPreview.percentage_error > 0 ? '+' : ''}{calcPreview.percentage_error.toFixed(2)}%
                   </span>
-                  <div style={{ fontSize: '1.25rem', fontWeight: '800', color: calcPreview.result === 'PASS' ? '#065F46' : '#991B1B' }}>
-                    Percentage Error: {calcPreview.percentage_error > 0 ? '+' : ''}{calcPreview.percentage_error.toFixed(2)}%
-                    <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#475569', marginLeft: '0.5rem' }}>
-                      (Δ = {calcPreview.error_value > 0 ? '+' : ''}{calcPreview.error_value})
-                    </span>
-                  </div>
                 </div>
 
-                <div style={{ minWidth: '180px' }}>
-                  <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                    Resolved Rule: <strong>{calcPreview.applied_rule_id}</strong> (v{calcPreview.applied_rule_version})
-                  </div>
-                  <div style={{ fontWeight: '700', fontSize: '0.95rem', color: '#0F2537' }}>
-                    Permissible Tolerance: ±{calcPreview.permissible_limit_value.toFixed(2)}%
-                  </div>
+                <div className="calc-stat-unit">
+                  <span className="calc-stat-label">Applicable Limit</span>
+                  <span className="calc-stat-num font-mono">
+                    ±{calcPreview.permissible_limit_value.toFixed(2)}%
+                  </span>
                 </div>
               </div>
 
-              <div style={{ fontSize: '0.75rem', color: '#64748B', fontStyle: 'italic' }}>
-                {calcPreview.disclaimer}
-              </div>
-            </div>
-          )}
-
-          {/* Mandatory Fail Fields (SIH Requirement: Required on FAIL) */}
-          {calcPreview?.result === 'FAIL' && (
-            <div style={{ background: '#FFF1F2', border: '1px solid #FDA4AF', padding: '1.25rem', borderRadius: '8px', marginTop: '1rem' }}>
-              <div style={{ color: '#9F1239', fontWeight: '800', fontSize: '0.9rem', marginBottom: '0.75rem' }}>
-                ⚠️ Verification Result is FAIL — Mandatory Defect Reporting:
-              </div>
-
-              <div className="form-group">
-                <label className="form-label" style={{ color: '#9F1239' }}>
-                  Failure Reason (REQUIRED)*
-                </label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="e.g. Error exceeded ±0.50% demo limit; load cell drift detected"
-                  value={failureReason}
-                  onChange={(e) => setFailureReason(e.target.value)}
-                  required={calcPreview?.result === 'FAIL'}
-                  disabled={isSubmitted}
-                />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ color: '#9F1239' }}>
-                  Corrective Action for Instrument Owner (REQUIRED)*
-                </label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="e.g. Recalibrate instrument transducer and submit re-verification application within 14 days"
-                  value={correctiveAction}
-                  onChange={(e) => setCorrectiveAction(e.target.value)}
-                  required={calcPreview?.result === 'FAIL'}
-                  disabled={isSubmitted}
-                />
+              <div className="calc-rule-footer">
+                <span>Rule: <strong>{calcPreview.applied_rule_id}</strong> (v{calcPreview.applied_rule_version})</span>
+                <span>Delta Error: {calcPreview.error_value > 0 ? '+' : ''}{calcPreview.error_value}</span>
               </div>
             </div>
           )}
         </div>
 
-        {/* 4. Optional GPS Capture */}
-        <div className="card">
-          <div className="card-header">
-            <div className="card-title">
-              <span>📍</span> Optional Field Geolocation
-            </div>
-            <button
-              type="button"
-              className="btn btn-outline btn-sm"
-              onClick={handleCaptureGps}
-              disabled={isSubmitted}
-            >
-              Capture Current GPS
-            </button>
-          </div>
-
-          <div className="grid-3" style={{ fontSize: '0.85rem' }}>
+        {/* ================= SECTION 4: EVIDENCE (LARGE TOUCH PHOTO BUTTONS) ================= */}
+        <div className="section-card">
+          <div className="section-card-header">
             <div>
-              <span style={{ color: '#64748B' }}>Latitude:</span> <strong>{lat || ver.verification_lat || 'Not Captured'}</strong>
+              <h3 className="section-card-title">4. Evidence Photos</h3>
+              <p className="section-card-sub">Capture field instrument photos, serial plates, and calibration test setup</p>
             </div>
-            <div>
-              <span style={{ color: '#64748B' }}>Longitude:</span> <strong>{lng || ver.verification_lng || 'Not Captured'}</strong>
-            </div>
-            <div>
-              <span style={{ color: '#64748B' }}>Accuracy:</span> <strong>{accuracy || (ver.gps_accuracy ? `±${ver.gps_accuracy}m` : 'N/A')}</strong>
-            </div>
+            <span className="badge badge-info">{ver.evidences?.length || 0} Attached</span>
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.5rem' }}>
-            GPS capture is optional and does not block verification. Public QR verification strictly redacts coordinates.
-          </div>
-        </div>
 
-        {/* 5. Submit Verification Button */}
-        {!isSubmitted && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-            <button type="button" className="btn btn-outline" onClick={() => onNavigate('dashboard')} style={{ minWidth: '100px' }}>
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className={`btn ${calcPreview?.result === 'PASS' ? 'btn-primary' : 'btn-danger'}`}
-              style={{ padding: '0.8rem 1.5rem', fontSize: '0.925rem', flex: '1 1 auto' }}
-              disabled={submitting}
-            >
-              {submitting ? 'Submitting Verification Docket...' : (
-                calcPreview?.result === 'PASS' 
-                  ? '✓ Submit Verification & Generate Digital Certificate' 
-                  : '✕ Submit Failure Docket (Set RE_VERIFICATION_REQUIRED)'
-              )}
-            </button>
-          </div>
-        )}
-      </form>
-
-      {/* 6. Structured Evidence Section (Mutable before submission, locked after) */}
-      <div className="card">
-        <div className="card-header">
-          <div className="card-title">
-            <span>📷</span> Inspection Evidence &amp; Photos ({ver.evidences?.length || 0})
-          </div>
-          <span style={{ fontSize: '0.8rem', color: '#64748B' }}>
-            {isSubmitted ? '🔒 Evidence Permanently Locked (Immutable)' : 'Draft Evidence (Can add/remove before submission)'}
-          </span>
-        </div>
-
-        {/* Upload form if not yet submitted */}
-        {!isSubmitted && (
-          <form onSubmit={handleEvidenceUpload} style={{ background: '#F8FAFC', padding: '1rem', borderRadius: '8px', marginBottom: '1.25rem' }}>
-            <div style={{ fontWeight: '700', fontSize: '0.85rem', marginBottom: '0.75rem', color: '#0F2537' }}>
-              Upload Structured Evidence Photo / Document
-            </div>
-
-            <div className="grid-2">
-              <div className="form-group">
-                <label className="form-label">Category</label>
+          {!isSubmitted && (
+            <div className="evidence-action-box">
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label className="form-label">Select Photo Category</label>
                 <select
                   className="form-select"
                   value={evCategory}
@@ -757,143 +617,258 @@ export const FieldVerification = ({ verificationId, onNavigate }) => {
                 </select>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Evidence Photo / Document</label>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                  <button
-                    type="button"
-                    className="btn btn-outline btn-sm"
-                    onClick={() => cameraInputRef.current?.click()}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: '600', padding: '0.5rem 0.85rem', flex: '1 1 130px', justifyContent: 'center' }}
-                  >
-                    📷 Capture Photo
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline btn-sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: '600', padding: '0.5rem 0.85rem', flex: '1 1 130px', justifyContent: 'center' }}
-                  >
-                    📁 Upload Photo
-                  </button>
-                  <input
-                    ref={cameraInputRef}
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    style={{ display: 'none' }}
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        setEvFile(e.target.files[0]);
-                      }
-                    }}
-                  />
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    style={{ display: 'none' }}
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        setEvFile(e.target.files[0]);
-                      }
-                    }}
-                  />
-                </div>
-                {evFile ? (
-                  <div style={{ fontSize: '0.8rem', color: '#007A64', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <span>✓ Ready: <strong>{evFile.name}</strong> ({(evFile.size / 1024).toFixed(1)} KB)</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEvFile(null);
-                        if (cameraInputRef.current) cameraInputRef.current.value = '';
-                        if (fileInputRef.current) fileInputRef.current.value = '';
-                      }}
-                      style={{ background: 'none', border: 'none', color: '#DC2626', cursor: 'pointer', fontSize: '0.75rem', padding: 0 }}
-                    >
-                      ✕ Clear
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.35rem' }}>
-                    Use rear camera to capture field instrument or upload document (.jpg, .png, .pdf).
-                  </div>
-                )}
+              {/* Large touch targets for Capture & Upload */}
+              <div className="touch-buttons-grid">
+                <button
+                  type="button"
+                  className="btn btn-navy touch-btn"
+                  onClick={() => cameraInputRef.current?.click()}
+                >
+                  <Camera size={20} />
+                  <span>Capture Photo</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline touch-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload size={20} />
+                  <span>Upload Photo</span>
+                </button>
+
+                {/* Hidden native inputs */}
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setEvFile(e.target.files[0]);
+                    }
+                  }}
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.pdf"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setEvFile(e.target.files[0]);
+                    }
+                  }}
+                />
               </div>
-            </div>
 
-            <div className="form-group">
-              <label className="form-label">Description / Caption</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="e.g. Close-up of calibration weights on platform"
-                value={evDescription}
-                onChange={(e) => setEvDescription(e.target.value)}
-              />
-            </div>
+              {evFile && (
+                <div className="evidence-file-ready">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <CheckCircle2 size={16} className="text-teal" />
+                    <span>Selected: <strong>{evFile.name}</strong> ({(evFile.size / 1024).toFixed(1)} KB)</span>
+                  </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button type="submit" className="btn btn-navy btn-sm" disabled={uploadingEv} style={{ minHeight: '38px', padding: '0.45rem 1.25rem' }}>
-                {uploadingEv ? 'Uploading...' : 'Upload Evidence'}
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* Evidence items list */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {(!ver.evidences || ver.evidences.length === 0) ? (
-            <div style={{ textAlign: 'center', padding: '1.5rem', color: '#94A3B8', fontSize: '0.85rem' }}>
-              No evidence files attached yet.
-            </div>
-          ) : (
-            ver.evidences.map(ev => (
-              <div
-                key={ev.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '0.65rem 0.85rem',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '6px',
-                  backgroundColor: '#FFFFFF',
-                  flexWrap: 'wrap',
-                  gap: '0.5rem'
-                }}
-              >
-                <div style={{ flex: '1 1 180px' }}>
-                  <span style={{ fontWeight: '700', fontSize: '0.825rem', color: '#007A64' }}>
-                    [{ev.category}]
-                  </span>{' '}
-                  <span style={{ fontWeight: '600', fontSize: '0.85rem' }}>{ev.filename}</span>
-                  {ev.description && (
-                    <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{ev.description}</div>
-                  )}
+                  <div style={{ marginTop: '0.75rem' }}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Optional caption or test weight notes..."
+                      value={evDescription}
+                      onChange={(e) => setEvDescription(e.target.value)}
+                      style={{ marginBottom: '0.5rem' }}
+                    />
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={handleEvidenceUpload}
+                        disabled={uploadingEv}
+                      >
+                        {uploadingEv ? 'Uploading...' : 'Confirm Upload'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => setEvFile(null)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 </div>
+              )}
+            </div>
+          )}
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
-                    {new Date(ev.uploaded_at).toLocaleTimeString()}
-                  </span>
+          {/* Evidence photo thumbnails / cards */}
+          <div className="evidence-list-wrap">
+            {(!ver.evidences || ver.evidences.length === 0) ? (
+              <p style={{ color: '#94A3B8', fontSize: '0.85rem', textAlign: 'center', padding: '1rem 0' }}>
+                No inspection photos attached yet.
+              </p>
+            ) : (
+              ver.evidences.map(ev => (
+                <div key={ev.id} className="evidence-item-card">
+                  <div className="evidence-meta">
+                    <span className="evidence-category-pill">{ev.category}</span>
+                    <span className="evidence-filename">{ev.filename}</span>
+                    {ev.description && <span className="evidence-desc">{ev.description}</span>}
+                  </div>
                   {!isSubmitted && (
                     <button
                       type="button"
-                      className="btn btn-outline btn-sm"
-                      style={{ color: '#DC2626', borderColor: '#FCA5A5' }}
+                      className="evidence-delete-btn"
                       onClick={() => handleDeleteEvidence(ev.id)}
+                      title="Delete photo"
                     >
-                      Remove
+                      <Trash2 size={15} />
                     </button>
                   )}
                 </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* ================= SECTION 5: GPS (OPTIONAL) ================= */}
+        <div className="section-card">
+          <div className="section-card-header">
+            <div>
+              <h3 className="section-card-title">5. Field Geolocation (Optional)</h3>
+              <p className="section-card-sub">Strictly optional; public QR views redact all coordinates</p>
+            </div>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={handleCaptureGps}
+              disabled={isSubmitted}
+            >
+              <Navigation size={13} />
+              <span>Capture GPS</span>
+            </button>
+          </div>
+
+          <div className="grid-3" style={{ fontSize: '0.85rem' }}>
+            <div>
+              <span style={{ color: '#64748B', display: 'block', fontSize: '0.72rem' }}>Latitude</span>
+              <strong>{lat || ver.verification_lat || 'Not recorded'}</strong>
+            </div>
+            <div>
+              <span style={{ color: '#64748B', display: 'block', fontSize: '0.72rem' }}>Longitude</span>
+              <strong>{lng || ver.verification_lng || 'Not recorded'}</strong>
+            </div>
+            <div>
+              <span style={{ color: '#64748B', display: 'block', fontSize: '0.72rem' }}>Accuracy</span>
+              <strong>{accuracy ? `±${accuracy}m` : (ver.gps_accuracy ? `±${ver.gps_accuracy}m` : 'N/A')}</strong>
+            </div>
+          </div>
+        </div>
+
+        {/* ================= SECTION 6: RESULT (PASS / FAIL) ================= */}
+        <div className="section-card">
+          <div className="section-card-header">
+            <h3 className="section-card-title">6. Metrological Result</h3>
+          </div>
+
+          <div className={`verification-result-display ${calcPreview?.result === 'FAIL' ? 'result-fail' : 'result-pass'}`}>
+            <div className="result-icon-box">
+              {calcPreview?.result === 'FAIL' ? (
+                <XCircle size={36} strokeWidth={2.5} />
+              ) : (
+                <CheckCircle2 size={36} strokeWidth={2.5} />
+              )}
+            </div>
+            <div className="result-text-box">
+              <span className="result-headline">RESULT</span>
+              <h2 className="result-state">
+                {calcPreview?.result === 'FAIL' ? 'FAIL' : 'PASS'}
+              </h2>
+              <span className="result-subtext">
+                {calcPreview?.result === 'FAIL'
+                  ? 'Error exceeds permissible statutory tolerance limit.'
+                  : 'All measurements conform within statutory tolerance.'}
+              </span>
+            </div>
+          </div>
+
+          {/* If FAIL, immediately show required failure reason & corrective action */}
+          {calcPreview?.result === 'FAIL' && (
+            <div className="fail-defects-block">
+              <div className="fail-defects-title">
+                <AlertTriangle size={18} />
+                <span>Mandatory Defect Reporting (Required for FAIL)</span>
               </div>
-            ))
+
+              <div className="form-group">
+                <label className="form-label" style={{ color: '#991B1B' }}>
+                  Failure Reason (Required)*
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. Error exceeded ±0.50% permissible limit; load cell drift detected"
+                  value={failureReason}
+                  onChange={(e) => setFailureReason(e.target.value)}
+                  required
+                  disabled={isSubmitted}
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ color: '#991B1B' }}>
+                  Corrective Action for Instrument Owner (Required)*
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. Recalibrate instrument transducer and submit re-verification application"
+                  value={correctiveAction}
+                  onChange={(e) => setCorrectiveAction(e.target.value)}
+                  required
+                  disabled={isSubmitted}
+                />
+              </div>
+            </div>
           )}
         </div>
-      </div>
+
+        {/* ================= SECTION 7: SUBMIT VERIFICATION ================= */}
+        {!isSubmitted && (
+          <div className="section-card submit-section-card">
+            <div className="submit-action-row">
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => onNavigate('dashboard')}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className={`btn ${calcPreview?.result === 'FAIL' ? 'btn-danger' : 'btn-primary'} submit-main-btn`}
+                disabled={submitting}
+              >
+                {submitting ? (
+                  'Submitting Docket...'
+                ) : calcPreview?.result === 'FAIL' ? (
+                  <>
+                    <XCircle size={16} />
+                    <span>Submit for Re-verification (Result: FAIL)</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 size={16} />
+                    <span>Submit Verification &amp; Issue Certificate</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+      </form>
     </div>
   );
 };

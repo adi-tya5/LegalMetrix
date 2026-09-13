@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../api/client';
 import { StatusBadge } from '../components/StatusBadge';
 import { DemoDisclaimer } from '../components/DemoDisclaimer';
+import { ResponsiveTable } from '../components/ResponsiveTable';
+import { SkeletonTable } from '../components/SkeletonLoader';
+import { ArrowLeft, RefreshCw, FileSpreadsheet } from 'lucide-react';
 
 export const AuditLogs = ({ onNavigate }) => {
   const [logs, setLogs] = useState([]);
@@ -14,7 +17,7 @@ export const AuditLogs = ({ onNavigate }) => {
       let url = '/audit/?limit=200';
       if (entityFilter) url += `&entity_name=${entityFilter}`;
       const data = await apiRequest(url);
-      setLogs(data);
+      setLogs(data || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -27,24 +30,28 @@ export const AuditLogs = ({ onNavigate }) => {
   }, [entityFilter]);
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+    <div className="dashboard-container">
+      <div className="page-header-block">
         <div>
-          <button className="btn btn-outline btn-sm" onClick={() => onNavigate('dashboard')} style={{ marginBottom: '0.5rem' }}>
-            &larr; Back to Dashboard
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => onNavigate('dashboard')}
+            style={{ marginBottom: '0.5rem' }}
+          >
+            <ArrowLeft size={14} />
+            <span>Back to Dashboard</span>
           </button>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#0F2537' }}>
-            Immutable Cryptographic Audit Trail
-          </h2>
-          <p style={{ color: '#64748B', fontSize: '0.85rem' }}>
-            Append-only tamper-evident event ledger recording all workflow transitions, verifications, and cryptographic actions.
+          <h1 className="page-main-title">Immutable Audit Trail</h1>
+          <p className="page-sub-title">
+            Append-only tamper-evident event ledger recording all workflow transitions, verifications, and cryptographic actions
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="page-actions-group">
           <select
             className="form-select"
-            style={{ minWidth: '140px', flex: '1 1 140px', padding: '0.4rem' }}
+            style={{ minWidth: '150px', padding: '0.45rem 0.65rem', fontSize: '0.85rem' }}
             value={entityFilter}
             onChange={(e) => setEntityFilter(e.target.value)}
           >
@@ -57,73 +64,113 @@ export const AuditLogs = ({ onNavigate }) => {
             <option value="Rule">Rules</option>
           </select>
 
-          <button className="btn btn-outline btn-sm" onClick={loadLogs} style={{ flexShrink: 0 }}>
-            🔄 Refresh
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={loadLogs}
+          >
+            <RefreshCw size={14} />
+            <span>Refresh</span>
           </button>
         </div>
       </div>
 
       <DemoDisclaimer customText="Audit records are stored in an append-only relational ledger. Modifications or silent alterations to historical audit events are strictly prohibited." />
 
-      <div className="card">
-        <div className="card-header">
-          <div className="card-title">
-            <span>📜</span> System Event Ledger ({logs.length})
+      <div className="section-card">
+        <div className="section-card-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FileSpreadsheet size={18} className="text-teal" />
+            <h3 className="section-card-title">System Event Ledger ({logs.length})</h3>
           </div>
         </div>
 
-        <div className="table-container">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th>Event ID</th>
-                <th>Timestamp (UTC)</th>
-                <th>Actor</th>
-                <th>Role</th>
-                <th>Event Type</th>
-                <th>Target Entity</th>
-                <th>Entity ID</th>
-                <th>Metadata</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', padding: '2rem', color: '#94A3B8' }}>
-                    Loading audit events...
-                  </td>
-                </tr>
-              ) : logs.length === 0 ? (
-                <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', padding: '2rem', color: '#94A3B8' }}>
-                    No audit records found matching criteria.
-                  </td>
-                </tr>
-              ) : (
-                logs.map((log) => (
-                  <tr key={log.id}>
-                    <td style={{ fontFamily: 'monospace', color: '#64748B' }}>#{log.id}</td>
-                    <td style={{ fontSize: '0.78rem', whiteSpace: 'nowrap' }}>
-                      {new Date(log.timestamp).toLocaleString()}
-                    </td>
-                    <td style={{ fontWeight: '600' }}>{log.actor_name}</td>
-                    <td><StatusBadge status={log.actor_role} /></td>
-                    <td style={{ fontFamily: 'monospace', fontWeight: '700', fontSize: '0.8rem', color: '#0F2537' }}>
-                      {log.event_type}
-                    </td>
-                    <td>{log.entity_name}</td>
-                    <td style={{ fontFamily: 'monospace', color: '#007A64', fontWeight: '600' }}>
-                      {log.entity_id}
-                    </td>
-                    <td style={{ fontSize: '0.72rem', color: '#475569', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {log.metadata_json ? JSON.stringify(log.metadata_json) : '-'}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        {loading ? (
+          <SkeletonTable rows={4} cols={5} />
+        ) : (
+          <ResponsiveTable
+            columns={[
+              {
+                key: 'id',
+                label: 'Event ID',
+                render: (row) => (
+                  <span className="font-mono" style={{ fontSize: '0.8rem', color: '#64748B' }}>
+                    #{row.id}
+                  </span>
+                )
+              },
+              {
+                key: 'timestamp',
+                label: 'Timestamp (UTC)',
+                render: (row) => (
+                  <span style={{ fontSize: '0.8rem', color: '#475569' }}>
+                    {new Date(row.timestamp).toLocaleString()}
+                  </span>
+                )
+              },
+              {
+                key: 'actor',
+                label: 'Actor & Role',
+                render: (row) => (
+                  <div>
+                    <strong>{row.actor_name}</strong>
+                    <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{row.actor_role}</div>
+                  </div>
+                )
+              },
+              {
+                key: 'event_type',
+                label: 'Event Type',
+                render: (row) => (
+                  <span className="font-mono" style={{ fontWeight: '700', fontSize: '0.8rem', color: '#0F2537' }}>
+                    {row.event_type}
+                  </span>
+                )
+              },
+              {
+                key: 'entity',
+                label: 'Target Entity',
+                render: (row) => (
+                  <span>
+                    {row.entity_name} ({row.entity_id})
+                  </span>
+                )
+              }
+            ]}
+            data={logs}
+            emptyMessage="No audit records found matching criteria."
+            renderMobileCard={(row) => (
+              <div>
+                <div className="mobile-card-header">
+                  <div>
+                    <span className="mobile-card-title-label">Event #{row.id}</span>
+                    <div className="mobile-card-title-val font-mono" style={{ fontSize: '0.85rem' }}>
+                      {row.event_type}
+                    </div>
+                  </div>
+                  <StatusBadge status={row.actor_role} size="small" />
+                </div>
+
+                <div className="mobile-card-row">
+                  <span className="mobile-card-label">Actor</span>
+                  <span className="mobile-card-val">{row.actor_name}</span>
+                </div>
+
+                <div className="mobile-card-row">
+                  <span className="mobile-card-label">Target Entity</span>
+                  <span className="mobile-card-val">{row.entity_name} ({row.entity_id})</span>
+                </div>
+
+                <div className="mobile-card-row">
+                  <span className="mobile-card-label">Timestamp</span>
+                  <span className="mobile-card-val" style={{ fontSize: '0.75rem', color: '#64748B' }}>
+                    {new Date(row.timestamp).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            )}
+          />
+        )}
       </div>
     </div>
   );

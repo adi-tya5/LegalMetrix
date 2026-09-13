@@ -2,9 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../api/client';
 import { StatusBadge } from './StatusBadge';
+import {
+  Menu,
+  Bell,
+  LogOut,
+  User,
+  Shield,
+  Scale,
+  FlaskConical,
+  CheckCircle,
+  ExternalLink
+} from 'lucide-react';
 
 export const Navbar = ({ onNavigate, onToggleMobileNav, mobileNavOpen }) => {
-  const { user, role, logout, switchRole, DEMO_CREDENTIALS } = useAuth();
+  const { user, role, logout, switchRole } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -16,7 +27,7 @@ export const Navbar = ({ onNavigate, onToggleMobileNav, mobileNavOpen }) => {
       try {
         const notifs = await apiRequest('/notifications/?unread_only=true');
         setUnreadCount(notifs ? notifs.length : 0);
-      } catch (err) {
+      } catch {
         // silent
       }
     };
@@ -26,136 +37,135 @@ export const Navbar = ({ onNavigate, onToggleMobileNav, mobileNavOpen }) => {
   }, [user]);
 
   return (
-    <header>
+    <header className="site-header">
       {/* Top Demo Role Switcher Bar */}
       <div className="top-role-bar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ fontWeight: '700', color: '#CBD5E1', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            SIH26036 Prototype Demo Role Switcher:
-          </span>
+        <div className="top-role-inner">
+          <div className="role-switcher-title-wrap">
+            <span className="prototype-badge">SIH26036</span>
+            <span className="role-switcher-caption">Demo Role Switcher:</span>
+          </div>
+
           <div className="top-role-buttons">
             <button
+              type="button"
               className={`role-switch-btn ${role === 'USER' ? 'active' : ''}`}
               onClick={() => switchRole('USER')}
-              title="Switch to Instrument Owner (Rajesh Kumar)"
+              title="Instrument Owner (Rajesh Kumar)"
             >
-              👤 Owner (User)
+              <User size={13} />
+              <span>Owner</span>
             </button>
             <button
+              type="button"
               className={`role-switch-btn ${role === 'LMO' ? 'active' : ''}`}
               onClick={() => switchRole('LMO')}
-              title="Switch to Legal Metrology Officer (Inspector Vijay)"
+              title="Legal Metrology Officer (Inspector Vijay)"
             >
-              ⚖️ LMO Officer
+              <Scale size={13} />
+              <span>LMO Officer</span>
             </button>
             <button
+              type="button"
               className={`role-switch-btn ${role === 'GATC' ? 'active' : ''}`}
               onClick={() => switchRole('GATC')}
-              title="Switch to Government Approved Test Centre (Anil Verma)"
+              title="Government Approved Test Centre (Anil Verma)"
             >
-              🔬 GATC (Govt Approved Test Centre)
+              <FlaskConical size={13} />
+              <span>GATC Centre</span>
             </button>
             <button
+              type="button"
               className={`role-switch-btn ${role === 'ADMIN' ? 'active' : ''}`}
               onClick={() => switchRole('ADMIN')}
-              title="Switch to Controller / Admin (Sunil Deshmukh)"
+              title="Directorate / Controller (Sunil Deshmukh)"
             >
-              🛡️ Administrator
+              <Shield size={13} />
+              <span>Administrator</span>
             </button>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.78rem' }}>
-          <span style={{ color: '#94A3B8' }}>SIH 2026 Category: Software</span>
-          <span style={{ color: '#38BDF8', fontWeight: '600' }}>● System Operational</span>
+        <div className="top-role-status">
+          <span className="status-indicator-dot" />
+          <span>System Operational</span>
         </div>
       </div>
 
-      {/* Main Navigation Bar */}
+      {/* Main Navbar */}
       <nav className="navbar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+        <div className="navbar-brand-section">
           {user && (
             <button
               type="button"
               className="hamburger-btn"
               onClick={onToggleMobileNav}
               aria-label="Toggle Navigation Menu"
-              title="Menu"
+              aria-expanded={mobileNavOpen}
             >
-              ☰
+              <Menu size={22} />
             </button>
           )}
-          <div className="brand-container" style={{ cursor: 'pointer' }} onClick={() => onNavigate('dashboard')}>
+
+          <div
+            className="brand-container"
+            onClick={() => onNavigate('dashboard')}
+            role="button"
+            tabIndex={0}
+          >
             <div className="brand-logo">LM</div>
             <div className="brand-text">
-              <h1>LegalMetrix</h1>
-              <p>Unified Digital Verification &amp; Certification Platform</p>
+              <h1 className="brand-heading">LegalMetrix</h1>
+              <p className="brand-subheading">National Legal Metrology Portal</p>
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="navbar-actions-section">
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="navbar-user-cluster">
+              {/* Notifications bell */}
               <button
-                className="btn btn-outline btn-sm"
+                type="button"
+                className="navbar-icon-btn"
                 onClick={() => onNavigate('notifications')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  padding: '0.35rem 0.55rem',
-                  position: 'relative'
-                }}
                 title="Notifications & Alerts"
+                aria-label="Notifications"
               >
-                <span style={{ fontSize: '0.95rem' }}>🔔</span>
-                {unreadCount > 0 ? (
-                  <span
-                    style={{
-                      background: '#EF4444',
-                      color: '#FFFFFF',
-                      fontSize: '0.65rem',
-                      fontWeight: '800',
-                      borderRadius: '9999px',
-                      padding: '0.1rem 0.35rem',
-                      lineHeight: '1.2'
-                    }}
-                  >
-                    {unreadCount}
-                  </span>
-                ) : (
-                  <span style={{ fontSize: '0.7rem', color: '#64748B' }}>0</span>
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span className="nav-notif-badge">{unreadCount}</span>
                 )}
               </button>
 
-              <div className="navbar-user-info" style={{ textAlign: 'right' }}>
-                <div style={{ fontWeight: '700', fontSize: '0.85rem', color: '#0F2537' }}>
-                  {user.full_name}
-                </div>
-                <div className="navbar-user-org" style={{ fontSize: '0.72rem', color: '#64748B' }}>
-                  {user.organization || user.role}
-                </div>
+              {/* User profile summary */}
+              <div className="navbar-user-meta">
+                <span className="user-name">{user.full_name}</span>
+                <span className="user-org">{user.organization || user.role}</span>
               </div>
 
-              <span className="navbar-user-badge">
-                <StatusBadge status={user.role} />
-              </span>
+              <div className="navbar-role-badge">
+                <StatusBadge status={user.role} size="small" />
+              </div>
 
+              {/* Logout button */}
               <button
-                className="btn btn-outline btn-sm"
+                type="button"
+                className="btn btn-outline btn-sm logout-btn"
                 onClick={logout}
-                style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', whiteSpace: 'nowrap' }}
+                title="Sign out of LegalMetrix"
               >
-                Logout
+                <LogOut size={14} />
+                <span className="logout-text">Logout</span>
               </button>
             </div>
           ) : (
             <button
+              type="button"
               className="btn btn-primary btn-sm"
               onClick={() => onNavigate('login')}
             >
-              Officer / User Login
+              Portal Login
             </button>
           )}
         </div>

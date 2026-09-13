@@ -2,6 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../api/client';
 import { StatusBadge } from '../components/StatusBadge';
 import { DemoDisclaimer } from '../components/DemoDisclaimer';
+import { ResponsiveTable } from '../components/ResponsiveTable';
+import { SkeletonStats, SkeletonTable } from '../components/SkeletonLoader';
+import {
+  Shield,
+  UserPlus,
+  Sliders,
+  CreditCard,
+  FileSpreadsheet,
+  BarChart3,
+  ArrowRight,
+  Scale,
+  Inbox,
+  Calendar,
+  Activity,
+  AlertTriangle,
+  FileText
+} from 'lucide-react';
 
 export const AdminDashboard = ({ onNavigate }) => {
   const [metrics, setMetrics] = useState(null);
@@ -15,11 +32,11 @@ export const AdminDashboard = ({ onNavigate }) => {
       const [m, apps, audits] = await Promise.all([
         apiRequest('/reports/metrics'),
         apiRequest('/applications/?status=SUBMITTED'),
-        apiRequest('/audit/?limit=8')
+        apiRequest('/audit/?limit=6')
       ]);
       setMetrics(m);
-      setPendingApps(apps);
-      setRecentAudits(audits);
+      setPendingApps(apps || []);
+      setRecentAudits(audits || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -31,198 +48,312 @@ export const AdminDashboard = ({ onNavigate }) => {
     loadData();
   }, []);
 
-  if (loading) return <div style={{ padding: '2rem' }}>Loading Admin Control Centre...</div>;
+  if (loading) {
+    return (
+      <div className="dashboard-container">
+        <SkeletonStats />
+        <SkeletonTable rows={3} cols={6} />
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+    <div className="dashboard-container">
+      {/* Header */}
+      <div className="page-header-block">
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#0F2537' }}>
-            Directorate Control Centre &amp; Allocation Desk
-          </h2>
-          <p style={{ color: '#64748B', fontSize: '0.875rem' }}>
+          <h1 className="page-main-title">Directorate Control Centre</h1>
+          <p className="page-sub-title">
             Legal Metrology Administration &bull; Verifier Allocation &bull; Rules &amp; Fee Governance
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button className="btn btn-navy" onClick={() => onNavigate('rules')}>
-            ⚙️ Rules Engine
+
+        <div className="page-actions-group">
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() => onNavigate('rules')}
+          >
+            <Sliders size={15} />
+            <span>Rules Engine</span>
           </button>
-          <button className="btn btn-navy" onClick={() => onNavigate('fees')}>
-            💳 Fee Engine
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() => onNavigate('fees')}
+          >
+            <CreditCard size={15} />
+            <span>Fee Engine</span>
           </button>
-          <button className="btn btn-primary" onClick={() => onNavigate('allocation')}>
-            👥 Verifier Allocation
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => onNavigate('allocation')}
+          >
+            <UserPlus size={15} />
+            <span>Allocation Desk</span>
           </button>
         </div>
       </div>
 
       <DemoDisclaimer />
 
-      {/* 10 Operational Metrics Grid */}
-      <div className="grid-4" style={{ marginBottom: '1.75rem' }}>
-        <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#EFF6FF', color: '#3B82F6' }}>⚖️</div>
-          <div>
-            <div className="stat-value">{metrics?.total_instruments || 0}</div>
-            <div className="stat-label">Total Instruments</div>
+      {/* 4-Stat Core Operational Metrics */}
+      <div className="compact-summary-row" style={{ marginBottom: '1.5rem' }}>
+        <div className="summary-pill-card" onClick={() => onNavigate('allocation')}>
+          <div className="pill-icon-box bg-amber">
+            <Inbox size={20} />
+          </div>
+          <div className="pill-content">
+            <span className="pill-value">{metrics?.pending_applications || pendingApps.length}</span>
+            <span className="pill-label">Awaiting Allocation</span>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#FFFBEB', color: '#F59E0B' }}>📥</div>
-          <div>
-            <div className="stat-value">{metrics?.pending_applications || 0}</div>
-            <div className="stat-label">Pending Apps</div>
+        <div className="summary-pill-card">
+          <div className="pill-icon-box bg-blue">
+            <Calendar size={20} />
+          </div>
+          <div className="pill-content">
+            <span className="pill-value">{metrics?.scheduled_verifications || 0}</span>
+            <span className="pill-label">Scheduled Tests</span>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#F5F3FF', color: '#8B5CF6' }}>👥</div>
-          <div>
-            <div className="stat-value">{metrics?.assigned_applications || 0}</div>
-            <div className="stat-label">Assigned Verifier</div>
+        <div className="summary-pill-card">
+          <div className="pill-icon-box bg-green">
+            <Activity size={20} />
+          </div>
+          <div className="pill-content">
+            <span className="pill-value">{metrics?.certificates_issued || 0}</span>
+            <span className="pill-label">Certificates Issued</span>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#ECFEFF', color: '#06B6D4' }}>📅</div>
-          <div>
-            <div className="stat-value">{metrics?.scheduled_verifications || 0}</div>
-            <div className="stat-label">Scheduled</div>
+        <div className="summary-pill-card">
+          <div className="pill-icon-box bg-purple">
+            <AlertTriangle size={20} />
           </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#FEF3C7', color: '#D97706' }}>🔍</div>
-          <div>
-            <div className="stat-value">{metrics?.under_verification || 0}</div>
-            <div className="stat-label">Under Verification</div>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#ECFDF5', color: '#10B981' }}>📜</div>
-          <div>
-            <div className="stat-value">{metrics?.certificates_issued || 0}</div>
-            <div className="stat-label">Certificates Issued</div>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#FFF7ED', color: '#EA580C' }}>⏰</div>
-          <div>
-            <div className="stat-value">{metrics?.expiring_certificates || 0}</div>
-            <div className="stat-label">Expiring Soon</div>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#FEF2F2', color: '#DC2626' }}>❌</div>
-          <div>
-            <div className="stat-value">{(metrics?.expired_instruments || 0) + (metrics?.reverification_required || 0)}</div>
-            <div className="stat-label">Re-Verif Required</div>
+          <div className="pill-content">
+            <span className="pill-value">
+              {(metrics?.expired_instruments || 0) + (metrics?.reverification_required || 0)}
+            </span>
+            <span className="pill-label">Re-Verif Required</span>
           </div>
         </div>
       </div>
 
-      {/* Applications Awaiting Allocation Desk */}
-      <div className="card">
-        <div className="card-header">
-          <div className="card-title">
-            <span>📥</span> Applications Awaiting Verifier Allocation (Payment Completed)
+      {/* Pending Allocation Desk */}
+      <div className="section-card">
+        <div className="section-card-header">
+          <div>
+            <h3 className="section-card-title">Applications Awaiting Verifier Allocation</h3>
+            <p className="section-card-sub">
+              Payment cleared; pending assignment to designated LMO or GATC test centre
+            </p>
           </div>
-          <button className="btn btn-outline btn-sm" onClick={() => onNavigate('allocation')}>
-            View Allocation Desk &rarr;
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => onNavigate('allocation')}
+          >
+            Open Allocation Desk &rarr;
           </button>
         </div>
 
-        <div className="table-container">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th>App Number</th>
-                <th>Instrument UID</th>
-                <th>Instrument Type</th>
-                <th>Applicant</th>
-                <th>Fee Paid</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingApps.length === 0 ? (
-                <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', padding: '1.5rem', color: '#94A3B8' }}>
-                    No submitted applications currently awaiting allocation.
-                  </td>
-                </tr>
-              ) : (
-                pendingApps.map((app) => (
-                  <tr key={app.id}>
-                    <td style={{ fontWeight: '700', fontFamily: 'monospace' }}>{app.application_number}</td>
-                    <td>{app.instrument_uid}</td>
-                    <td>{app.instrument_type}</td>
-                    <td>{app.applicant_name}</td>
-                    <td style={{ fontWeight: '600', color: '#007A64' }}>₹{app.fee_amount}</td>
-                    <td><StatusBadge status={app.current_status} /></td>
-                    <td>
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() => onNavigate('allocation', app.id)}
-                      >
-                        Allocate to LMO / GATC
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        {pendingApps.length === 0 ? (
+          <div className="empty-state-box">
+            <Inbox size={40} className="empty-state-icon" />
+            <h4>All Submitted Applications Allocated</h4>
+            <p>There are no submitted verification applications currently pending officer allocation.</p>
+          </div>
+        ) : (
+          <ResponsiveTable
+            columns={[
+              {
+                key: 'application_number',
+                label: 'Application ID',
+                render: (row) => (
+                  <span style={{ fontWeight: '700', fontFamily: 'monospace', color: '#0F2537' }}>
+                    {row.application_number}
+                  </span>
+                )
+              },
+              {
+                key: 'instrument',
+                label: 'Instrument & UID',
+                render: (row) => (
+                  <div>
+                    <div style={{ fontWeight: '600' }}>{row.instrument_type}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{row.instrument_uid}</div>
+                  </div>
+                )
+              },
+              {
+                key: 'applicant_name',
+                label: 'Applicant Owner',
+                render: (row) => row.applicant_name
+              },
+              {
+                key: 'fee_amount',
+                label: 'Fee Paid',
+                render: (row) => (
+                  <strong style={{ color: '#007A64' }}>₹{row.fee_amount}</strong>
+                )
+              },
+              {
+                key: 'current_status',
+                label: 'Status',
+                render: (row) => <StatusBadge status={row.current_status} size="small" />
+              },
+              {
+                key: 'actions',
+                label: 'Action',
+                isAction: true,
+                render: (row) => (
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={() => onNavigate('allocation', row.id)}
+                  >
+                    Allocate to LMO / GATC
+                  </button>
+                )
+              }
+            ]}
+            data={pendingApps}
+            renderMobileCard={(row) => (
+              <div>
+                <div className="mobile-card-header">
+                  <div>
+                    <span className="mobile-card-title-label">Application</span>
+                    <div className="mobile-card-title-val">{row.application_number}</div>
+                  </div>
+                  <StatusBadge status={row.current_status} size="small" />
+                </div>
+
+                <div className="mobile-card-row">
+                  <span className="mobile-card-label">Instrument</span>
+                  <span className="mobile-card-val">
+                    <strong>{row.instrument_type}</strong> ({row.instrument_uid})
+                  </span>
+                </div>
+
+                <div className="mobile-card-row">
+                  <span className="mobile-card-label">Applicant</span>
+                  <span className="mobile-card-val">{row.applicant_name}</span>
+                </div>
+
+                <div className="mobile-card-row">
+                  <span className="mobile-card-label">Fee Paid</span>
+                  <span className="mobile-card-val" style={{ color: '#007A64', fontWeight: '700' }}>
+                    ₹{row.fee_amount}
+                  </span>
+                </div>
+
+                <div className="mobile-card-actions">
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm btn-block"
+                    onClick={() => onNavigate('allocation', row.id)}
+                  >
+                    Allocate to LMO / GATC
+                  </button>
+                </div>
+              </div>
+            )}
+          />
+        )}
       </div>
 
-      {/* Immutable Audit Trail Snip */}
-      <div className="card">
-        <div className="card-header">
-          <div className="card-title">
-            <span>📜</span> Recent Immutable Audit Ledger Records
+      {/* Immutable Audit Trail Ledger */}
+      <div className="section-card">
+        <div className="section-card-header">
+          <div>
+            <h3 className="section-card-title">Recent Immutable Audit Trail Events</h3>
+            <p className="section-card-sub">
+              Append-only statutory audit trail &bull; Strict event logging across all verification actions
+            </p>
           </div>
-          <button className="btn btn-outline btn-sm" onClick={() => onNavigate('audit')}>
-            Full Audit Trail &rarr;
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => onNavigate('audit')}
+          >
+            View Full Audit Trail &rarr;
           </button>
         </div>
 
-        <div className="table-container">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th>Timestamp (UTC)</th>
-                <th>Actor</th>
-                <th>Role</th>
-                <th>Event Type</th>
-                <th>Target Entity</th>
-                <th>Entity ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentAudits.map((log) => (
-                <tr key={log.id}>
-                  <td style={{ fontSize: '0.78rem', color: '#64748B' }}>
-                    {new Date(log.timestamp).toLocaleString()}
-                  </td>
-                  <td style={{ fontWeight: '600' }}>{log.actor_name}</td>
-                  <td><StatusBadge status={log.actor_role} /></td>
-                  <td style={{ fontFamily: 'monospace', fontWeight: '600', fontSize: '0.8rem', color: '#0F2537' }}>
-                    {log.event_type}
-                  </td>
-                  <td>{log.entity_name}</td>
-                  <td style={{ fontFamily: 'monospace', color: '#007A64' }}>{log.entity_id}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ResponsiveTable
+          columns={[
+            {
+              key: 'timestamp',
+              label: 'Timestamp (UTC)',
+              render: (row) => (
+                <span style={{ fontSize: '0.8rem', color: '#64748B' }}>
+                  {new Date(row.timestamp).toLocaleString()}
+                </span>
+              )
+            },
+            {
+              key: 'actor_name',
+              label: 'Actor & Role',
+              render: (row) => (
+                <div>
+                  <strong>{row.actor_name}</strong>
+                  <div style={{ fontSize: '0.72rem', color: '#64748B' }}>{row.actor_role}</div>
+                </div>
+              )
+            },
+            {
+              key: 'event_type',
+              label: 'Event Type',
+              render: (row) => (
+                <span style={{ fontFamily: 'monospace', fontWeight: '600', fontSize: '0.8rem', color: '#0F2537' }}>
+                  {row.event_type}
+                </span>
+              )
+            },
+            {
+              key: 'entity',
+              label: 'Entity Target',
+              render: (row) => (
+                <span>{row.entity_name} ({row.entity_id})</span>
+              )
+            }
+          ]}
+          data={recentAudits}
+          renderMobileCard={(row) => (
+            <div>
+              <div className="mobile-card-header">
+                <div>
+                  <span className="mobile-card-title-label">Event</span>
+                  <div className="mobile-card-title-val font-mono" style={{ fontSize: '0.85rem' }}>
+                    {row.event_type}
+                  </div>
+                </div>
+                <StatusBadge status={row.actor_role} size="small" />
+              </div>
+
+              <div className="mobile-card-row">
+                <span className="mobile-card-label">Actor</span>
+                <span className="mobile-card-val">{row.actor_name}</span>
+              </div>
+
+              <div className="mobile-card-row">
+                <span className="mobile-card-label">Target</span>
+                <span className="mobile-card-val">{row.entity_name} ({row.entity_id})</span>
+              </div>
+
+              <div className="mobile-card-row">
+                <span className="mobile-card-label">Time</span>
+                <span className="mobile-card-val" style={{ fontSize: '0.75rem', color: '#64748B' }}>
+                  {new Date(row.timestamp).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          )}
+        />
       </div>
     </div>
   );
