@@ -11,12 +11,8 @@ export const PublicVerify = ({ certificateId, onNavigate }) => {
   useEffect(() => {
     if (!certificateId) return;
     setLoading(true);
-    // Public endpoint: requires NO authentication header!
-    fetch(`/verify/${certificateId}`)
-      .then(res => {
-        if (!res.ok) throw new Error('Certificate not found or invalid QR code');
-        return res.json();
-      })
+    // Public endpoint: requires NO authentication header, routed via centralized client
+    apiRequest(`/verify/${certificateId}`)
       .then(setCertData)
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
